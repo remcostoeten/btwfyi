@@ -1,0 +1,43 @@
+{
+  "name": "yomeic",
+  "version": "0.1.0",
+  "description": "A developer-first backlog overlay connecting tasks to DOM elements",
+  "author": "Remco Stoeten",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/remcostoeten/yomeic.git"
+  },
+  "keywords": [
+    "todo",
+    "backlog",
+    "overlay",
+    "developer-tools"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
