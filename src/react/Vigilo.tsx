@@ -38,7 +38,7 @@ import { calculateBezier } from '../core/connections'
 import { MAX_VISIBLE_ITEMS, UNDO_WINDOW_MS } from './constants'
 import type { VigiloProps, CategoryConfig } from './types'
 import { updatePaletteInstance, removePaletteInstance } from './registry'
-import { VigiloCommandPalette } from './CommandPalette'
+import { VigiloCommandPalette } from './cmd'
 import { mergeTheme, mergeStyles } from './theme'
 
 let paletteMounted = false

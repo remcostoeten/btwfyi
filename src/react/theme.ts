@@ -1,21 +1,33 @@
-import { baseTheme, baseStyles } from './constants'
+import { baseTheme, baseStyles, type Theme } from './constants'
 
-/** User supplied overrides for Vigilo styling tokens. */
-export type ThemeOverrides = Partial<typeof baseTheme> & {
+/**
+ * User-supplied overrides for Vigilo styling tokens.
+ * This type allows for partial overrides of the base theme,
+ * and also supports mode-specific overrides for light and dark themes.
+ *
+ * @property {Partial<Theme>} [modes] - Mode-specific overrides.
+ * @property {Partial<Theme>} [modes.light] - Overrides for the light theme.
+ * @property {Partial<Theme>} [modes.dark] - Overrides for the dark theme.
+ */
+export type ThemeOverrides = Partial<Theme> & {
   modes?: {
-    light?: Partial<typeof baseTheme>
-    dark?: Partial<typeof baseTheme>
+    light?: Partial<Theme>
+    dark?: Partial<Theme>
   }
 }
 
 /**
  * Merges custom theme tokens with the canonical base theme.
  * Supports per-mode overrides (light/dark).
+ *
+ * @param {ThemeOverrides} [overrides] - The user-supplied theme overrides.
+ * @param {'light' | 'dark'} [colorMode] - The current color mode.
+ * @returns {Theme} The merged theme.
  */
 export function mergeTheme(
   overrides?: ThemeOverrides,
   colorMode?: 'light' | 'dark'
-) {
+): Theme {
   if (!overrides) return baseTheme
 
   const modeOverrides =
@@ -46,6 +58,13 @@ export function mergeTheme(
   }
 }
 
+/**
+ * Merges custom style overrides with the computed base styles.
+ *
+ * @param {Theme} theme - The merged theme.
+ * @param {Partial<typeof baseStyles>} [styleOverrides] - The user-supplied style overrides.
+ * @returns {typeof baseStyles} The merged styles.
+ */
 export function mergeStyles(
   theme: ReturnType<typeof mergeTheme>,
   styleOverrides?: Partial<typeof baseStyles>

@@ -1,5 +1,5 @@
 export { Vigilo } from './Vigilo'
-export { VigiloCommandPalette } from './CommandPalette'
+export { VigiloCommandPalette } from './cmd'
 export type { VigiloProps, CategoryConfig } from './types'
 export {
   theme,
