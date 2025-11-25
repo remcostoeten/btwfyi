@@ -2,6 +2,7 @@ import type { StorageKeys, VigiloState, DisplayMode, TodoStatus } from './types'
 
 const STORAGE_PREFIX = 'vigilo-state-'
 
+/** Namespaced localStorage keys to isolate multiple overlays per page. */
 export function createStorageKeys(instanceKey: string): StorageKeys {
   return {
     pos: `${STORAGE_PREFIX}pos-${instanceKey}`,
@@ -18,6 +19,7 @@ export function createStorageKeys(instanceKey: string): StorageKeys {
   }
 }
 
+/** Reads persisted overlay state, ignoring malformed payloads defensively. */
 export function loadState(keys: StorageKeys): Partial<VigiloState> {
   const state: Partial<VigiloState> = {}
 
@@ -144,6 +146,7 @@ export function loadState(keys: StorageKeys): Partial<VigiloState> {
   return state
 }
 
+/** Persists the panel position to localStorage. */
 export function savePosition(keys: StorageKeys, position: { x: number; y: number }): void {
   try {
     localStorage.setItem(keys.pos, JSON.stringify(position))
@@ -152,6 +155,7 @@ export function savePosition(keys: StorageKeys, position: { x: number; y: number
   }
 }
 
+/** Persists DOM connections for each task index. */
 export function saveConnections(keys: StorageKeys, connections: unknown[]): void {
   try {
     localStorage.setItem(keys.con, JSON.stringify(connections))
@@ -160,6 +164,7 @@ export function saveConnections(keys: StorageKeys, connections: unknown[]): void
   }
 }
 
+/** Persists which display mode the user selected. */
 export function saveDisplayMode(keys: StorageKeys, mode: DisplayMode): void {
   try {
     localStorage.setItem(keys.mode, JSON.stringify(mode))
@@ -168,6 +173,7 @@ export function saveDisplayMode(keys: StorageKeys, mode: DisplayMode): void {
   }
 }
 
+/** Persists whether the entire overlay is hidden. */
 export function saveHidden(keys: StorageKeys, isHidden: boolean): void {
   try {
     localStorage.setItem(keys.hidden, JSON.stringify(isHidden))
@@ -176,6 +182,7 @@ export function saveHidden(keys: StorageKeys, isHidden: boolean): void {
   }
 }
 
+/** Persists whether connection lines should render. */
 export function saveShowLines(keys: StorageKeys, showLines: boolean): void {
   try {
     localStorage.setItem(keys.lines, JSON.stringify(showLines))
@@ -184,6 +191,7 @@ export function saveShowLines(keys: StorageKeys, showLines: boolean): void {
   }
 }
 
+/** Persists whether red/blue badges show for tasks. */
 export function saveShowBadges(keys: StorageKeys, showBadges: boolean): void {
   try {
     localStorage.setItem(keys.badges, JSON.stringify(showBadges))
@@ -192,6 +200,7 @@ export function saveShowBadges(keys: StorageKeys, showBadges: boolean): void {
   }
 }
 
+/** Persists the chosen SVG stroke color for connection lines. */
 export function saveLineColor(keys: StorageKeys, color: string): void {
   try {
     localStorage.setItem(keys.lineColor, JSON.stringify(color))
@@ -200,6 +209,7 @@ export function saveLineColor(keys: StorageKeys, color: string): void {
   }
 }
 
+/** Persists connection line opacity between 0 and 1. */
 export function saveLineOpacity(keys: StorageKeys, opacity: number): void {
   try {
     localStorage.setItem(keys.lineOpacity, JSON.stringify(opacity))
@@ -208,6 +218,7 @@ export function saveLineOpacity(keys: StorageKeys, opacity: number): void {
   }
 }
 
+/** Persists the overall panel opacity slider. */
 export function saveComponentOpacity(keys: StorageKeys, opacity: number): void {
   try {
     localStorage.setItem(keys.componentOpacity, JSON.stringify(opacity))
@@ -216,6 +227,7 @@ export function saveComponentOpacity(keys: StorageKeys, opacity: number): void {
   }
 }
 
+/** Persists per-task status selections as a string-indexed map. */
 export function saveStatuses(keys: StorageKeys, statuses: Map<number, TodoStatus>): void {
   try {
     const statusObj: Record<string, TodoStatus> = {}

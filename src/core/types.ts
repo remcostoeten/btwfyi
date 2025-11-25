@@ -1,3 +1,4 @@
+/** Pixel coordinates for overlay positioning */
 export type Pos = {
   x: number
   y: number
@@ -5,6 +6,7 @@ export type Pos = {
 
 export type TodoStatus = 'todo' | 'working' | 'done'
 
+/** Individual task metadata surfaced inside Vigilo */
 export type TodoItem = {
   text: string
   action?: string
@@ -17,10 +19,11 @@ export type TodoItem = {
   updatedAt?: string
 }
 
-export type CategoryConfig = {
-  id: string
+/** Group of related todo items shown inside the overlay */
+export type CategoryConfig<ID extends string = string, Item extends TodoItem = TodoItem> = {
+  id: ID
   displayName?: string
-  items: TodoItem[]
+  items: Item[]
 }
 
 export type Connection = {
@@ -37,8 +40,9 @@ export type UndoSnapshot = {
   isHidden: boolean
 }
 
-export type VigiloConfig = {
-  category: string
+/** Config shared between core and React entry points */
+export type VigiloConfig<CategoryId extends string = string> = {
+  category: CategoryId
   instanceId?: string
 }
 

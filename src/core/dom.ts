@@ -1,3 +1,7 @@
+/**
+ * Safely validates whether a selector can query the current DOM.
+ * Prevents throwing when authors supply invalid CSS selectors.
+ */
 export function isValidSelector(selector: string): boolean {
   try {
     return !!document.querySelector(selector)
@@ -6,6 +10,10 @@ export function isValidSelector(selector: string): boolean {
   }
 }
 
+/**
+ * Builds a reasonably stable selector for a given element by preferring IDs,
+ * falling back to parent/child index traversal when needed.
+ */
 export function generateSelector(element: Element): string {
   if (element.id) {
     const s = `#${element.id}`
@@ -26,10 +34,13 @@ export function generateSelector(element: Element): string {
   return element.tagName.toLowerCase()
 }
 
+/**
+ * Derives a human-friendly label for UI display by using ids, text content,
+ * or the lower-cased tagName as a last resort.
+ */
 export function getElementLabel(element: Element): string {
   if (element.id) return `#${element.id}`
   return (
     element.textContent?.trim().slice(0, 30) || element.tagName.toLowerCase()
   )
 }
-

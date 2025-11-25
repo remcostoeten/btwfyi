@@ -35,13 +35,17 @@ import {
 import { generateSelector, getElementLabel } from '../core/dom'
 import { calculateBezier } from '../core/connections'
 import { MAX_VISIBLE_ITEMS, UNDO_WINDOW_MS, theme, styles } from './constants'
-import type { VigiloProps } from './types'
+import type { VigiloProps, CategoryConfig } from './types'
 
 /* -------------------------------------------------------------------------- */
 /*                                  COMPONENT                                 */
 /* -------------------------------------------------------------------------- */
 
-function VigiloCore({ category, instanceId, categories }: VigiloProps) {
+function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConfig[]>({
+  category,
+  instanceId,
+  categories,
+}: VigiloProps<TCategories>) {
   const categoryData = useMemo(
     () => categories.find((c) => c.id === category),
     [category, categories]
@@ -1682,7 +1686,14 @@ function VigiloCore({ category, instanceId, categories }: VigiloProps) {
   )
 }
 
-export function Vigilo(props: VigiloProps) {
+/**
+ * React wrapper that renders the Vigilo overlay.
+ * The generic `TCategories` parameter is inferred from the `categories` prop,
+ * so IDEs can autocomplete valid `category` ids automatically.
+ */
+export function Vigilo<TCategories extends readonly CategoryConfig[] = CategoryConfig[]>(
+  props: VigiloProps<TCategories>
+) {
   if (!props.enabled) return null
   return <VigiloCore {...props} />
 }

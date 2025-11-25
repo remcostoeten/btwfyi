@@ -1,12 +1,12 @@
 {
   "name": "vigilo",
-  "version": "0.0.1",
+  "version": "0.0.11",
   "description": "A lightweight task awareness overlay for development environments",
   "author": "Remco Stoeten",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/remcostoeten/vigilo.git"
+    "url": "git+https://github.com/remcostoeten/vigilo.git"
   },
   "keywords": [
     "todo",
@@ -20,14 +20,14 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     },
     "./react": {
+      "types": "./dist/react/index.d.ts",
       "import": "./dist/react/index.mjs",
-      "require": "./dist/react/index.js",
-      "types": "./dist/react/index.d.ts"
+      "require": "./dist/react/index.js"
     }
   },
   "files": [
