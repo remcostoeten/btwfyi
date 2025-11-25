@@ -1,18 +1,19 @@
 {
-  "name": "yomeic",
-  "version": "0.1.0",
-  "description": "A developer-first backlog overlay connecting tasks to DOM elements",
+  "name": "vigilo",
+  "version": "0.0.1",
+  "description": "A lightweight task awareness overlay for development environments",
   "author": "Remco Stoeten",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/remcostoeten/yomeic.git"
+    "url": "https://github.com/remcostoeten/vigilo.git"
   },
   "keywords": [
     "todo",
-    "backlog",
+    "focus",
     "overlay",
-    "developer-tools"
+    "developer-tools",
+    "awareness"
   ],
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -22,6 +23,11 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./react": {
+      "import": "./dist/react/index.mjs",
+      "require": "./dist/react/index.js",
+      "types": "./dist/react/index.d.ts"
     }
   },
   "files": [
@@ -30,10 +36,20 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "version:patch": "node scripts/version.js patch",
+    "version:minor": "node scripts/version.js minor",
+    "version:major": "node scripts/version.js major",
+    "release": "node scripts/release.js"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "@types/react": "^18.3.27",
+    "@types/react-dom": "^18.3.7",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
