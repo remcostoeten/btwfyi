@@ -1,6 +1,7 @@
 export { Vigilo } from './Vigilo'
 export { VigiloCommandPalette } from './cmd'
 export type { VigiloProps, CategoryConfig } from './types'
+export { generateSelector, getElementLabel, isValidSelector } from './dom'
 export {
   theme,
   styles,

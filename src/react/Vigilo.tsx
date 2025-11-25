@@ -21,7 +21,6 @@ import type {
 } from '../core/types'
 import {
   createStorageKeys,
-  loadState,
   savePosition,
   saveConnections,
   saveDisplayMode,
@@ -33,7 +32,8 @@ import {
   saveComponentOpacity,
   saveStatuses,
 } from '../core/storage'
-import { generateSelector, getElementLabel } from '../core/dom'
+import { createDefaultState, hydrateState } from '../core/state'
+import { generateSelector, getElementLabel } from './dom'
 import { calculateBezier } from '../core/connections'
 import { MAX_VISIBLE_ITEMS, UNDO_WINDOW_MS } from './constants'
 import type { VigiloProps, CategoryConfig } from './types'
@@ -75,26 +75,33 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
     [themeOverrides, colorMode]
   )
 
+  const primaryLineColor = theme.colors.primary
+
   const styles = useMemo(
     () => mergeStyles(theme, stylesOverrides),
     [theme, stylesOverrides]
   )
 
+  const defaultState = useMemo(
+    () => createDefaultState({ lineColor: primaryLineColor }),
+    [primaryLineColor]
+  )
+
   // State
   const [isMounted, setIsMounted] = useState(false)
-  const [pos, setPos] = useState<Pos>({ x: 20, y: 20 })
-  const [connections, setConnections] = useState<Connection[]>([])
-  const [displayMode, setDisplayMode] = useState<DisplayMode>('full')
+  const [pos, setPos] = useState<Pos>(defaultState.position)
+  const [connections, setConnections] = useState<Connection[]>(defaultState.connections)
+  const [displayMode, setDisplayMode] = useState<DisplayMode>(defaultState.displayMode)
   const [isExpanded, setIsExpanded] = useState(false)
-  const [isHidden, setIsHidden] = useState(false)
+  const [isHidden, setIsHidden] = useState(defaultState.isHidden)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [showLines, setShowLines] = useState(true)
-  const [showBadges, setShowBadges] = useState(true)
-  const [lineColor, setLineColor] = useState(theme.colors.primary)
-  const [lineOpacity, setLineOpacity] = useState(0.6)
-  const [componentOpacity, setComponentOpacity] = useState(1)
+  const [showLines, setShowLines] = useState(defaultState.showLines)
+  const [showBadges, setShowBadges] = useState(defaultState.showBadges)
+  const [lineColor, setLineColor] = useState(defaultState.lineColor)
+  const [lineOpacity, setLineOpacity] = useState(defaultState.lineOpacity)
+  const [componentOpacity, setComponentOpacity] = useState(defaultState.componentOpacity)
   const [canUndo, setCanUndo] = useState(false)
-  const [statuses, setStatuses] = useState<Map<number, TodoStatus>>(new Map())
+  const [statuses, setStatuses] = useState<Map<number, TodoStatus>>(defaultState.statuses)
   const [openIssueIndex, setOpenIssueIndex] = useState<number | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -109,7 +116,8 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
   const [previewPosition, setPreviewPosition] = useState<Pos | null>(null)
   const [editingConnection, setEditingConnection] = useState<number | null>(null)
   const [hoveredConnection, setHoveredConnection] = useState<number | null>(null)
-  const [, setTick] = useState(0)
+  const [mousePos, setMousePos] = useState<Pos | null>(null)
+  const [tick, setTick] = useState(0)
 
   const connectionsByIndex = useMemo(() => {
     const map = new Map<number, Connection>()
@@ -128,19 +136,19 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
 
   // Initialization
   useEffect(() => {
-    const savedState = loadState(keys)
-    if (savedState.position) setPos(savedState.position)
-    if (savedState.connections) setConnections(savedState.connections)
-    if (savedState.displayMode) setDisplayMode(savedState.displayMode)
-    if (savedState.isHidden !== undefined) setIsHidden(savedState.isHidden)
-    if (savedState.showLines !== undefined) setShowLines(savedState.showLines)
-    if (savedState.showBadges !== undefined) setShowBadges(savedState.showBadges)
-    if (savedState.lineColor) setLineColor(savedState.lineColor)
-    if (savedState.lineOpacity !== undefined) setLineOpacity(savedState.lineOpacity)
-    if (savedState.componentOpacity !== undefined) setComponentOpacity(savedState.componentOpacity)
-    if (savedState.statuses) setStatuses(savedState.statuses)
+    const hydrated = hydrateState(keys, { lineColor: primaryLineColor })
+    setPos(hydrated.position)
+    setConnections(hydrated.connections)
+    setDisplayMode(hydrated.displayMode)
+    setIsHidden(hydrated.isHidden)
+    setShowLines(hydrated.showLines)
+    setShowBadges(hydrated.showBadges)
+    setLineColor(hydrated.lineColor)
+    setLineOpacity(hydrated.lineOpacity)
+    setComponentOpacity(hydrated.componentOpacity)
+    setStatuses(hydrated.statuses)
     setIsMounted(true)
-  }, [keys])
+  }, [keys, primaryLineColor])
 
   // Global Listeners - optimized for drag performance
   useEffect(() => {
@@ -177,9 +185,18 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
       if (rafId) return // Skip if we already have a pending frame
 
       rafId = requestAnimationFrame(() => {
+        let newX = e.clientX - dragOffset.x
+        let newY = e.clientY - dragOffset.y
+
+        if (panelRef.current) {
+          const rect = panelRef.current.getBoundingClientRect()
+          newX = Math.max(0, Math.min(newX, window.innerWidth - rect.width))
+          newY = Math.max(0, Math.min(newY, window.innerHeight - rect.height))
+        }
+
         const newPos = {
-          x: e.clientX - dragOffset.x,
-          y: e.clientY - dragOffset.y,
+          x: newX,
+          y: newY,
         }
         setPos(newPos)
 
@@ -215,12 +232,47 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
     }
   }, [isDragging, dragOffset, keys.pos, pos])
 
+  // Keep panel within viewport
+  useEffect(() => {
+    if (!isMounted || !panelRef.current) return
+
+    const panel = panelRef.current
+    const rect = panel.getBoundingClientRect()
+
+    const newPos = { ...pos }
+    let updated = false
+
+    if (pos.x + rect.width > window.innerWidth) {
+      newPos.x = window.innerWidth - rect.width
+      updated = true
+    }
+    if (pos.y + rect.height > window.innerHeight) {
+      newPos.y = window.innerHeight - rect.height
+      updated = true
+    }
+    if (pos.x < 0) {
+      newPos.x = 0
+      updated = true
+    }
+    if (pos.y < 0) {
+      newPos.y = 0
+      updated = true
+    }
+
+    if (updated && (newPos.x !== pos.x || newPos.y !== pos.y)) {
+      setPos(newPos)
+      savePosition(keys, newPos)
+    }
+  }, [isMounted, pos, tick, keys.pos])
+
+
   // Selection Logic
   useEffect(() => {
     if (selectingIndex === null) {
       setHoveredTarget(null)
       setIsFreeroam(false)
       setPreviewPosition(null)
+      setMousePos(null)
       return
     }
 
@@ -266,6 +318,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
     }
 
     function onMove(e: MouseEvent) {
+      setMousePos({ x: e.clientX, y: e.clientY })
       if (isFreeroam) {
         setHoveredTarget(null)
         setPreviewPosition({ x: e.clientX, y: e.clientY })
@@ -894,39 +947,78 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
 
   function renderLines() {
     if (!isMounted) return null
-    
+
     // Render preview line when in freeroam mode
-    const previewLine = selectingIndex !== null && isFreeroam && previewPosition ? (() => {
-      const el = todoRefs.current.get(selectingIndex)
-      if (!el || !document.body.contains(el)) return null
-      
-      const rect = el.getBoundingClientRect()
-      const start = {
-        x: rect.right,
-        y: rect.top + rect.height / 2,
-      }
-      const d = calculateBezier(start, previewPosition)
-      
-      return (
-        <g key="preview-freeroam">
-          <path 
-            d={d} 
-            stroke={theme.colors.freeroam}
-            strokeWidth="2"
-            fill="none"
-            strokeDasharray="6 4"
-            opacity="0.3"
-          />
-          <circle
-            cx={previewPosition.x}
-            cy={previewPosition.y}
-            {...styles.freeroamDot}
-            opacity="0.5"
-          />
-        </g>
-      )
-    })() : null
-    
+    const freeroamPreviewLine =
+      selectingIndex !== null && isFreeroam && previewPosition
+        ? (() => {
+            const el = todoRefs.current.get(selectingIndex)
+            if (!el || !document.body.contains(el)) return null
+
+            const rect = el.getBoundingClientRect()
+            const start = {
+              x: rect.right,
+              y: rect.top + rect.height / 2,
+            }
+            const d = calculateBezier(start, previewPosition)
+
+            return (
+              <g key="preview-freeroam">
+                <path
+                  d={d}
+                  stroke={theme.colors.freeroam}
+                  strokeWidth="2"
+                  fill="none"
+                  strokeDasharray="6 4"
+                  opacity="0.3"
+                />
+                <circle
+                  cx={previewPosition.x}
+                  cy={previewPosition.y}
+                  {...styles.freeroamDot}
+                  opacity="0.5"
+                />
+              </g>
+            )
+          })()
+        : null
+
+    // Render preview line when in regular selection mode
+    const selectionPreviewLine =
+      selectingIndex !== null && !isFreeroam && mousePos
+        ? (() => {
+            const el = todoRefs.current.get(selectingIndex)
+            if (!el || !document.body.contains(el)) return null
+
+            const rect = el.getBoundingClientRect()
+            const start = {
+              x: rect.right,
+              y: rect.top + rect.height / 2,
+            }
+
+            let end = mousePos
+            if (hoveredTarget) {
+              const tRect = hoveredTarget.getBoundingClientRect()
+              end = { x: tRect.left, y: tRect.top + tRect.height / 2 }
+            }
+
+            const d = calculateBezier(start, end)
+
+            return (
+              <g key="preview-selection">
+                <path
+                  d={d}
+                  stroke={theme.colors.primary}
+                  strokeWidth="2"
+                  fill="none"
+                  strokeDasharray="6 4"
+                  opacity="0.5"
+                />
+              </g>
+            )
+          })()
+        : null
+
     return createPortal(
       <svg
         style={{
@@ -944,88 +1036,106 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
           }
         }}
       >
-        {previewLine}
-        {connections.map((conn) => {
-          const el = todoRefs.current.get(conn.todoIndex)
-          if (!el || !document.body.contains(el)) return null
-          
-          const rect = el.getBoundingClientRect()
-          const start = {
-            x: rect.right,
-            y: rect.top + rect.height / 2,
-          }
-          let end: Pos = { x: 0, y: 0 }
+        {freeroamPreviewLine}
+        {selectionPreviewLine}
+        {showLines &&
+          connections.map((conn) => {
+            const el = todoRefs.current.get(conn.todoIndex)
+            if (!el || !document.body.contains(el)) return null
 
-          if (conn.targetPosition) {
-            end = conn.targetPosition
-          } else if (conn.targetSelector) {
-            const t = document.querySelector(conn.targetSelector)
-            if (!t) return null
-            const tRect = t.getBoundingClientRect()
-            end = {
-              x: tRect.left,
-              y: tRect.top + tRect.height / 2,
+            const rect = el.getBoundingClientRect()
+            const start = {
+              x: rect.right,
+              y: rect.top + rect.height / 2,
             }
-          }
+            let end: Pos = { x: 0, y: 0 }
 
-          const d = calculateBezier(start, end)
-          const isFree = !!conn.targetPosition
-          const isEditing = editingConnection === conn.todoIndex
-          const key = `${conn.todoIndex}-${isFree ? 'free' : 'dom'}`
+            if (conn.targetPosition) {
+              end = conn.targetPosition
+            } else if (conn.targetSelector) {
+              const t = document.querySelector(conn.targetSelector)
+              if (!t) return null
+              const tRect = t.getBoundingClientRect()
+              end = {
+                x: tRect.left,
+                y: tRect.top + tRect.height / 2,
+              }
+            }
 
-          const strokeColor = isFree ? theme.colors.freeroam : lineColor
-          const strokeOpacity = isFree ? 0.6 : lineOpacity
+            const d = calculateBezier(start, end)
+            const isFree = !!conn.targetPosition
+            const isEditing = editingConnection === conn.todoIndex
+            const key = `${conn.todoIndex}-${isFree ? 'free' : 'dom'}`
 
-          return (
-            <g key={key}>
-              <path 
-                d={d} 
-                stroke={strokeColor}
-                strokeWidth="2"
-                fill="none"
-                strokeDasharray="6 4"
-                style={{ animation: 'vigilo-dash 30s linear infinite' }}
-                opacity={strokeOpacity}
-              />
-              <circle
-                cx={start.x}
-                cy={start.y}
-                fill={strokeColor}
-                r={styles.connectorDot.r}
-                opacity={strokeOpacity}
-              />
-              {/* Invisible larger hit area for easier interaction */}
-              <circle
-                ref={(el) => {
-                  if (el) connectionPointRefs.current.set(conn.todoIndex, el)
-                  else connectionPointRefs.current.delete(conn.todoIndex)
-                }}
-                cx={end.x}
-                cy={end.y}
-                r={12}
-                fill="transparent"
-                style={{
-                  pointerEvents: 'auto',
-                  cursor: isEditing ? 'grabbing' : 'grab',
-                }}
-              />
-              {/* Visible connection point */}
-              <circle
-                cx={end.x}
-                cy={end.y}
-                fill={isFree ? styles.freeroamDot.fill : strokeColor}
-                stroke={isFree ? styles.freeroamDot.stroke : undefined}
-                strokeWidth={isFree ? styles.freeroamDot.strokeWidth : undefined}
-                r={hoveredConnection === conn.todoIndex ? (isFree ? 4.5 : 5) : (isFree ? styles.freeroamDot.r : styles.connectorDot.r)}
-                opacity={hoveredConnection === conn.todoIndex ? 1 : (isFree ? styles.freeroamDot.opacity : strokeOpacity)}
-                style={{
-                  pointerEvents: 'none',
-                  transition: 'r 0.2s, opacity 0.2s',
-                }}
-              />
-            </g>
-          )
-        })}
+            const strokeColor = isFree ? theme.colors.freeroam : lineColor
+            const strokeOpacity = isFree ? 0.6 : lineOpacity
+
+            return (
+              <g key={key}>
+                <path
+                  d={d}
+                  stroke={strokeColor}
+                  strokeWidth="2"
+                  fill="none"
+                  strokeDasharray="6 4"
+                  style={{ animation: 'vigilo-dash 30s linear infinite' }}
+                  opacity={strokeOpacity}
+                />
+                <circle
+                  cx={start.x}
+                  cy={start.y}
+                  fill={strokeColor}
+                  r={styles.connectorDot.r}
+                  opacity={strokeOpacity}
+                />
+                {/* Invisible larger hit area for easier interaction */}
+                <circle
+                  ref={(el) => {
+                    if (el) connectionPointRefs.current.set(conn.todoIndex, el)
+                    else connectionPointRefs.current.delete(conn.todoIndex)
+                  }}
+                  cx={end.x}
+                  cy={end.y}
+                  r={12}
+                  fill="transparent"
+                  style={{
+                    pointerEvents: 'auto',
+                    cursor: isEditing ? 'grabbing' : 'grab',
+                  }}
+                />
+                {/* Visible connection point */}
+                <circle
+                  cx={end.x}
+                  cy={end.y}
+                  fill={isFree ? styles.freeroamDot.fill : strokeColor}
+                  stroke={isFree ? styles.freeroamDot.stroke : undefined}
+                  strokeWidth={
+                    isFree ? styles.freeroamDot.strokeWidth : undefined
+                  }
+                  r={
+                    hoveredConnection === conn.todoIndex
+                      ? isFree
+                        ? 4.5
+                        : 5
+                      : isFree
+                      ? styles.freeroamDot.r
+                      : styles.connectorDot.r
+                  }
+                  opacity={
+                    hoveredConnection === conn.todoIndex
+                      ? 1
+                      : isFree
+                      ? styles.freeroamDot.opacity
+                      : strokeOpacity
+                  }
+                  style={{
+                    pointerEvents: 'none',
+                    transition: 'r 0.2s, opacity 0.2s',
+                  }}
+                />
+              </g>
+            )
+          })}
       </svg>,
       document.body
     )
@@ -1099,7 +1209,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
         }
       `}</style>
 
-      {shouldRenderLines && renderLines()}
+      {(shouldRenderLines || selectingIndex !== null) && renderLines()}
 
       {/* 
          Overlay: The container must be pointer-events-none so mouse clicks

@@ -30,10 +30,8 @@ export function createStorageKeys(instanceKey: string): StorageKeys {
 export function loadState(keys: StorageKeys): Partial<VigiloState> {
   const state: Partial<VigiloState> = {}
 
-
   try {
-  // Ngl this ramp of constants lowkey looks aesthetic as fuck booooooooi
-  const savedPos = localStorage.getItem(keys.pos)
+    const savedPos = localStorage.getItem(keys.pos)
     const savedCon = localStorage.getItem(keys.con)
     const savedCol = localStorage.getItem(keys.col)
     const savedMode = localStorage.getItem(keys.mode)
@@ -44,7 +42,6 @@ export function loadState(keys: StorageKeys): Partial<VigiloState> {
     const savedLineColor = localStorage.getItem(keys.lineColor)
     const savedLineOpacity = localStorage.getItem(keys.lineOpacity)
     const savedComponentOpacity = localStorage.getItem(keys.componentOpacity)
-    // that was a good ramp
 
     if (savedPos) {
       try {

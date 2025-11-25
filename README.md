@@ -50,9 +50,9 @@ import {
   createStorageKeys,
   loadState,
   savePosition,
-  generateSelector,
   calculateBezier,
 } from 'vigilo'
+import { generateSelector } from 'vigilo/react'
 
 const keys = createStorageKeys('my-instance')
 const state = loadState(keys)
@@ -96,8 +96,9 @@ type TodoItem = {
 The framework-agnostic core provides utilities for:
 
 - Storage management (`createStorageKeys`, `loadState`, `savePosition`, etc.)
-- DOM utilities (`generateSelector`, `getElementLabel`, `isValidSelector`)
 - Connection calculations (`calculateBezier`)
+
+DOM helpers such as `generateSelector`, `getElementLabel`, and `isValidSelector` live in the React bundle (`vigilo/react`) because they require direct browser access.
 
 ## Command Palette
 
