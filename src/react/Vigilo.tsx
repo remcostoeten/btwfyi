@@ -9,6 +9,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useCallback,
 } from 'react'
 import { createPortal } from 'react-dom'
 import type {
@@ -34,8 +35,13 @@ import {
 } from '../core/storage'
 import { generateSelector, getElementLabel } from '../core/dom'
 import { calculateBezier } from '../core/connections'
-import { MAX_VISIBLE_ITEMS, UNDO_WINDOW_MS, theme, styles } from './constants'
+import { MAX_VISIBLE_ITEMS, UNDO_WINDOW_MS } from './constants'
 import type { VigiloProps, CategoryConfig } from './types'
+import { updatePaletteInstance, removePaletteInstance } from './registry'
+import { VigiloCommandPalette } from './CommandPalette'
+import { mergeTheme, mergeStyles } from './theme'
+
+let paletteMounted = false
 
 /* -------------------------------------------------------------------------- */
 /*                                  COMPONENT                                 */
@@ -45,6 +51,9 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
   category,
   instanceId,
   categories,
+  themeOverrides,
+  stylesOverrides,
+  colorMode,
 }: VigiloProps<TCategories>) {
   const categoryData = useMemo(
     () => categories.find((c) => c.id === category),
@@ -59,6 +68,16 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
   const keys = useMemo(
     () => createStorageKeys(instanceKey),
     [instanceKey]
+  )
+
+  const theme = useMemo(
+    () => mergeTheme(themeOverrides, colorMode),
+    [themeOverrides, colorMode]
+  )
+
+  const styles = useMemo(
+    () => mergeStyles(theme, stylesOverrides),
+    [theme, stylesOverrides]
   )
 
   // State
@@ -91,6 +110,14 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
   const [editingConnection, setEditingConnection] = useState<number | null>(null)
   const [hoveredConnection, setHoveredConnection] = useState<number | null>(null)
   const [, setTick] = useState(0)
+
+  const connectionsByIndex = useMemo(() => {
+    const map = new Map<number, Connection>()
+    connections.forEach((conn) => {
+      map.set(conn.todoIndex, conn)
+    })
+    return map
+  }, [connections])
 
   const panelRef = useRef<HTMLDivElement>(null)
   const todoRefs = useRef<Map<number, HTMLDivElement>>(new Map())
@@ -425,11 +452,25 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
     saveDisplayMode(keys, mode)
   }
 
-  function handleHide() {
+  const handleHide = useCallback(() => {
     setIsHidden(true)
     setIsSettingsOpen(false)
     saveHidden(keys, true)
-  }
+  }, [keys])
+
+  const revealOverlay = useCallback(
+    (scroll = true) => {
+      setIsHidden(false)
+      setIsSettingsOpen(false)
+      setShowKeyboardHelp(false)
+      setIsExpanded(true)
+      saveHidden(keys, false)
+      if (scroll && panelRef.current) {
+        panelRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    },
+    [keys]
+  )
 
   
   function handleSetMode(mode: DisplayMode) {
@@ -657,12 +698,83 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
     setIsExpanded(!isExpanded)
   }
 
-  function removeConnection(idx: number) {
-    const next = connections.filter((c) => c.todoIndex !== idx)
-    setConnections(next)
-    saveConnections(keys, next)
-    showToast('Connection removed', 'info')
-  }
+  const removeConnection = useCallback(
+    (idx: number) => {
+      const next = connections.filter((c) => c.todoIndex !== idx)
+      setConnections(next)
+      saveConnections(keys, next)
+      showToast('Connection removed', 'info')
+    },
+    [connections, keys, showToast]
+  )
+
+  const resetStatusesState = useCallback(() => {
+    const empty = new Map<number, TodoStatus>()
+    setStatuses(empty)
+    saveStatuses(keys, empty)
+    showToast('Statuses reset', 'info')
+  }, [keys, showToast])
+
+  useEffect(() => () => removePaletteInstance(instanceKey), [instanceKey])
+
+  useEffect(() => {
+    if (!categoryData) {
+      updatePaletteInstance(instanceKey, null)
+      return
+    }
+
+    const tasks = categoryData.items.map((item, idx) => ({
+      id: `${instanceKey}-${idx}`,
+      instanceKey,
+      index: idx,
+      text: item.text,
+      status: statuses.get(idx) ?? 'todo',
+      hasConnection: connectionsByIndex.has(idx),
+      focusTask: () => {
+        revealOverlay()
+        setOpenIssueIndex(idx)
+      },
+      clearConnection: connectionsByIndex.has(idx)
+        ? () => removeConnection(idx)
+        : undefined,
+    }))
+
+    updatePaletteInstance(instanceKey, {
+      instanceKey,
+      categoryId: categoryData.id,
+      label: categoryData.displayName || categoryData.id,
+      hidden: isHidden,
+      totalTasks: tasks.length,
+      connectedCount: connections.length,
+      tasks,
+      actions: {
+        focus: () => {
+          revealOverlay()
+          setOpenIssueIndex(null)
+        },
+        show: () => revealOverlay(),
+        hide: () => handleHide(),
+        resetConnections: () => {
+          setConnections([])
+          saveConnections(keys, [])
+          showToast('Connections cleared', 'info')
+        },
+        resetStatuses: () => resetStatusesState(),
+      },
+    })
+  }, [
+    categoryData,
+    connections,
+    connectionsByIndex,
+    handleHide,
+    instanceKey,
+    isHidden,
+    keys,
+    revealOverlay,
+    resetStatusesState,
+    removeConnection,
+    statuses,
+  ])
 
   function exportConfig() {
     try {
@@ -1687,13 +1799,25 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
 }
 
 /**
- * React wrapper that renders the Vigilo overlay.
- * The generic `TCategories` parameter is inferred from the `categories` prop,
- * so IDEs can autocomplete valid `category` ids automatically.
+ * React wrapper that renders the Vigilo overlay. Pass literal `categories`
+ * to get autocomplete for valid ids, and supply theme overrides to fully brand it.
  */
 export function Vigilo<TCategories extends readonly CategoryConfig[] = CategoryConfig[]>(
   props: VigiloProps<TCategories>
 ) {
-  if (!props.enabled) return null
-  return <VigiloCore {...props} />
+  const [shouldRenderPalette, setShouldRenderPalette] = useState(paletteMounted)
+
+  useEffect(() => {
+    if (!paletteMounted) {
+      paletteMounted = true
+      setShouldRenderPalette(true)
+    }
+  }, [])
+
+  return (
+    <>
+      {props.enabled ? <VigiloCore {...props} /> : null}
+      {shouldRenderPalette ? <VigiloCommandPalette /> : null}
+    </>
+  )
 }

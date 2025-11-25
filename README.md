@@ -99,7 +99,31 @@ The framework-agnostic core provides utilities for:
 - DOM utilities (`generateSelector`, `getElementLabel`, `isValidSelector`)
 - Connection calculations (`calculateBezier`)
 
+## Command Palette
+
+Press `Cmd/Ctrl + K` anywhere in your app to open the Vigilo command palette. Search across every mounted overlay, jump directly to a task, or type `vigilo` to enter management mode where you can show/hide overlays, clear connections, or reset statuses globally.
+
+## Theming
+
+Pass `themeOverrides`, `stylesOverrides`, or set a `colorMode` to align Vigilo with your design tokens. Overrides accept Tailwind utility strings, CSS variables, hex, or rgb(a) values:
+
+```tsx
+<Vigilo
+  category="dev"
+  categories={categories}
+  colorMode="dark"
+  themeOverrides={{
+    colors: { primary: 'var(--brand-blue)', textMain: 'text-white' },
+    modes: {
+      light: { colors: { bgPanel: 'bg-white', textMain: 'text-zinc-900' } },
+    },
+  }}
+  stylesOverrides={{
+    panel: 'fixed right-4 top-4 rounded-2xl border border-white/10 bg-slate-900/80',
+  }}
+/>
+```
+
 ## License
 
 MIT
-=we 

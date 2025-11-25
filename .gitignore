@@ -42,3 +42,7 @@ lerna-debug.log*
 *.temp
 .cache/
 
+# local test and bload files
+tmp/
+plans/
+_test_app_/*

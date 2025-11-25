@@ -1,7 +1,21 @@
+/**
+ * Constants for the Vigilo React component.
+ */
+
+/**
+ * The maximum number of items to display in the panel.
+ */
 export const MAX_VISIBLE_ITEMS = 3
+
+/**
+ * The window time in milliseconds for the undo feature.
+ */
 export const UNDO_WINDOW_MS = 8000
 
-export const theme = {
+/**
+ * The theme for the Vigilo React component.
+ */
+export const baseTheme = {
   colors: {
     primary: 'rgb(59, 130, 246)',
     primaryDim: 'rgba(59, 130, 246, 0.1)',
@@ -26,21 +40,23 @@ export const theme = {
   },
 }
 
-export const styles = {
-  panel: `${theme.layout.panel} ${theme.colors.textMain} ${theme.colors.bgPanel} ${theme.colors.borderPanel}`,
-  item: `${theme.layout.item} hover:bg-white/5`,
-  header: `${theme.layout.header} ${theme.colors.borderPanel}`,
-  badge: `${theme.layout.badge} bg-blue-900/50 text-blue-200`,
+export const baseStyles = {
+  panel: `${baseTheme.layout.panel} ${baseTheme.colors.textMain} ${baseTheme.colors.bgPanel} ${baseTheme.colors.borderPanel}`,
+  item: `${baseTheme.layout.item} hover:bg-white/5`,
+  header: `${baseTheme.layout.header} ${baseTheme.colors.borderPanel}`,
+  badge: `${baseTheme.layout.badge} bg-blue-900/50 text-blue-200`,
   connectorDot: {
-    fill: theme.colors.primary,
+    fill: baseTheme.colors.primary,
     r: 4,
   },
   freeroamDot: {
-    fill: theme.colors.freeroam,
-    stroke: theme.colors.freeroam,
+    fill: baseTheme.colors.freeroam,
+    stroke: baseTheme.colors.freeroam,
     strokeWidth: 1.5,
     r: 3.5,
     opacity: 0.9,
   },
 }
 
+export const theme = baseTheme
+export const styles = baseStyles

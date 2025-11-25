@@ -1,6 +1,6 @@
 import type { Pos } from './types'
 
-/**
+/**   
  * Returns an SVG cubic bezier path connecting overlay items to DOM targets.
  * The control points are derived from the horizontal distance so the curve
  * remains smooth regardless of panel placement.

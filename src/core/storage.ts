@@ -1,8 +1,13 @@
 import type { StorageKeys, VigiloState, DisplayMode, TodoStatus } from './types'
 
+/**
+ * The prefix for the localStorage keys.
+ */
 const STORAGE_PREFIX = 'vigilo-state-'
 
-/** Namespaced localStorage keys to isolate multiple overlays per page. */
+/**
+ * Creates namespaced localStorage keys to isolate multiple overlays per page.
+ */
 export function createStorageKeys(instanceKey: string): StorageKeys {
   return {
     pos: `${STORAGE_PREFIX}pos-${instanceKey}`,
@@ -19,22 +24,27 @@ export function createStorageKeys(instanceKey: string): StorageKeys {
   }
 }
 
-/** Reads persisted overlay state, ignoring malformed payloads defensively. */
+/**
+ * Reads persisted overlay state, ignoring malformed payloads defensively.
+ */
 export function loadState(keys: StorageKeys): Partial<VigiloState> {
   const state: Partial<VigiloState> = {}
 
+
   try {
-    const savedPos = localStorage.getItem(keys.pos)
+  // Ngl this ramp of constants lowkey looks aesthetic as fuck booooooooi
+  const savedPos = localStorage.getItem(keys.pos)
     const savedCon = localStorage.getItem(keys.con)
     const savedCol = localStorage.getItem(keys.col)
     const savedMode = localStorage.getItem(keys.mode)
-    const savedHidden = localStorage.getItem(keys.hidden)
     const savedLines = localStorage.getItem(keys.lines)
     const savedBadges = localStorage.getItem(keys.badges)
+    const savedHidden = localStorage.getItem(keys.hidden)
+    const savedStatuses = localStorage.getItem(keys.statuses)
     const savedLineColor = localStorage.getItem(keys.lineColor)
     const savedLineOpacity = localStorage.getItem(keys.lineOpacity)
     const savedComponentOpacity = localStorage.getItem(keys.componentOpacity)
-    const savedStatuses = localStorage.getItem(keys.statuses)
+    // that was a good ramp
 
     if (savedPos) {
       try {
