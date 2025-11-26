@@ -26,5 +26,17 @@ export default defineConfig([
     outDir: 'dist/react',
     external: ['react', 'react-dom'],
   },
+  {
+    entry: {
+      index: 'src/vue/index.ts',
+    },
+    format: ['cjs', 'esm'],
+    dts: true,
+    splitting: false,
+    sourcemap: true,
+    treeshake: true,
+    minify: false,
+    outDir: 'dist/vue',
+    external: ['vue'],
+  },
 ])
-
