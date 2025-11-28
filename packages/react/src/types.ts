@@ -1,10 +1,10 @@
-import type { CategoryConfig, VigiloConfig } from '../core/types'
+import type { CategoryConfig, VigiloConfig } from '@vigilo/core'
 import type { baseTheme, baseStyles } from './constants'
 
 export type { CategoryConfig, VigiloConfig }
 
 /**
- * Props for the Vigilo Vue component. Passing a literal `categories` array
+ * Props for the Vigilo React component. Passing a literal `categories` array
  * narrows the `category` prop to the provided IDs for better intellisense.
  *
  * Theme props accept Tailwind utility strings, CSS variables, rgb(a), or hex values.
@@ -27,5 +27,3 @@ export interface VigiloProps<
   /** Choose which override set (light/dark) to merge */
   colorMode?: 'light' | 'dark'
 }
-
-

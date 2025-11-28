@@ -1,5 +1,5 @@
-import { Vigilo } from 'vigilo/react'
-import type { CategoryConfig } from 'vigilo/react'
+import { Vigilo } from '@vigilo/react'
+import type { CategoryConfig } from '@vigilo/react'
 
 const categories: readonly CategoryConfig[] = [
   {
@@ -127,4 +127,5 @@ function App() {
 }
 
 export default App
+
 

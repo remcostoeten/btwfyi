@@ -15,17 +15,17 @@
     "developer-tools",
     "awareness"
   ],
-  "workspaces": [
-    "packages/*",
-    "examples/*"
-  ],
   "scripts": {
-    "build": "npm run build --workspaces",
-    "dev": "npm run dev --workspaces",
-    "typecheck": "npm run typecheck --workspaces",
-    "clean": "npm run clean --workspaces",
-    "example:react": "npm run dev --workspace=vigilo-react-example",
-    "example:vue": "npm run dev --workspace=vigilo-vue-example"
+    "build": "pnpm -r build",
+    "dev": "pnpm -r dev",
+    "typecheck": "pnpm -r typecheck",
+    "clean": "pnpm -r clean",
+    "version:patch": "node scripts/version.js patch",
+    "version:minor": "node scripts/version.js minor",
+    "version:major": "node scripts/version.js major",
+    "release": "node scripts/release.js",
+    "example:react": "pnpm --filter vigilo-react-example dev",
+    "example:vue": "pnpm --filter vigilo-vue-example dev"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
@@ -38,5 +38,5 @@
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "npm@10.0.0"
+  "packageManager": "pnpm@9.0.0"
 }

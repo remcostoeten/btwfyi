@@ -91,6 +91,19 @@ type TodoItem = {
 }
 ```
 
+### Vue Composition
+
+```ts
+import { useVigiloStore } from 'vigilo/vue'
+
+const { state, store } = useVigiloStore({
+  category: 'dev',
+  instanceId: 'dev-overlay',
+})
+```
+
+`state` stays reactive inside Vue components, and `store` exposes the same mutation helpers used by the React overlay so you can build custom Vue shells without reimplementing the business logic.
+
 ## Core API
 
 The framework-agnostic core provides utilities for:

@@ -1,4 +1,4 @@
-import type { CategoryConfig, VigiloConfig } from '../core/types'
+import type { CategoryConfig, VigiloConfig } from '@vigilo/core'
 import type { baseTheme, baseStyles } from './constants'
 
 export type { CategoryConfig, VigiloConfig }
@@ -27,5 +27,4 @@ export interface VigiloProps<
   /** Choose which override set (light/dark) to merge */
   colorMode?: 'light' | 'dark'
 }
-
 

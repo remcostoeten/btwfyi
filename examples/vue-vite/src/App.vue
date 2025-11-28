@@ -77,8 +77,8 @@
 </template>
 
 <script setup lang="ts">
-import Vigilo from 'vigilo/vue/Vigilo.vue'
-import type { CategoryConfig } from 'vigilo/vue'
+import Vigilo from '@vigilo/vue/Vigilo.vue'
+import type { CategoryConfig } from '@vigilo/vue'
 
 const categories: readonly CategoryConfig[] = [
   {

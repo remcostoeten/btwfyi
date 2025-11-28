@@ -38,5 +38,3 @@ export function getElementLabel(element: Element): string {
   if (element.id) return `#${element.id}`
   return element.textContent?.trim().slice(0, 30) || element.tagName.toLowerCase()
 }
-
-
