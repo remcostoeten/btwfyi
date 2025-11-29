@@ -26,7 +26,7 @@ function isEditableElement(target: EventTarget | null) {
 
 /**
  * Global command palette that surfaces all Vigilo tasks across an application.
- * Opens via Cmd/Ctrl + K or by typing "vigilo" in sequence.
+ * Opens via Alt + K or by typing "vigilo" in sequence.
  */
 export function VigiloCommandPalette() {
   const [isMounted, setIsMounted] = useState(false)
@@ -68,8 +68,8 @@ export function VigiloCommandPalette() {
       if (isEditableElement(e.target)) return
 
       const key = e.key.toLowerCase()
-      const isMetaK = (e.metaKey || e.ctrlKey) && key === 'k'
-      if (isMetaK) {
+      const isAltK = e.altKey && key === 'k'
+      if (isAltK) {
         e.preventDefault()
         openPalette('')
         return
@@ -148,7 +148,7 @@ export function VigiloCommandPalette() {
             </kbd>
           </div>
           <p className="mt-1 text-xs text-zinc-500">
-            Cmd/Ctrl + K to open from anywhere. Type “vigilo” for overlay management.
+            Alt + K to open from anywhere. Type "vigilo" for overlay management.
           </p>
         </div>
         <div className="max-h-[60vh] overflow-y-auto">

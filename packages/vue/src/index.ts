@@ -1,6 +1,6 @@
 export { useVigiloStore } from './use-vigilo-store'
 export type { UseVigiloStoreOptions, UseVigiloStoreReturn } from './use-vigilo-store'
-export { default as Vigilo } from './Vigilo.vue'
+export { VigiloRender } from './VigiloRender'
 export type { VigiloProps, CategoryConfig } from './types'
 export { generateSelector, getElementLabel, isValidSelector } from './dom'
 export {

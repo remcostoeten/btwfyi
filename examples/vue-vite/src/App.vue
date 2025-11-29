@@ -68,16 +68,12 @@
       </div>
     </div>
 
-    <Vigilo
-      :categories="categories"
-      category="development"
-      :enabled="true"
-    />
+    <VigiloRender :categories="categories" category="development" :enabled="true" />
   </div>
 </template>
 
 <script setup lang="ts">
-import Vigilo from '@vigilo/vue/Vigilo.vue'
+import { VigiloRender } from '@vigilo/vue'
 import type { CategoryConfig } from '@vigilo/vue'
 
 const categories: readonly CategoryConfig[] = [

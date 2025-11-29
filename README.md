@@ -115,7 +115,7 @@ DOM helpers such as `generateSelector`, `getElementLabel`, and `isValidSelector`
 
 ## Command Palette
 
-Press `Cmd/Ctrl + K` anywhere in your app to open the Vigilo command palette. Search across every mounted overlay, jump directly to a task, or type `vigilo` to enter management mode where you can show/hide overlays, clear connections, or reset statuses globally.
+Press `Alt + K` anywhere in your app to open the Vigilo command palette. Search across every mounted overlay, jump directly to a task, or type `vigilo` to enter management mode where you can show/hide overlays, clear connections, or reset statuses globally.
 
 ## Theming
 
