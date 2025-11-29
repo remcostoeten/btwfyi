@@ -1,5 +1,5 @@
 {
-  "name": "@vigilo/react",
+  "name": "@remcostoeten/vigilo-react",
   "version": "0.0.12",
   "description": "React bindings for Vigilo task awareness overlay",
   "author": "Remco Stoeten",
@@ -27,7 +27,7 @@
     "react-dom": ">=18.0.0"
   },
   "dependencies": {
-    "@vigilo/core": "^0.0.12"
+    "@remcostoeten/vigilo-core": "^0.0.12"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",

@@ -18,12 +18,12 @@ import type {
   Connection,
   DisplayMode,
   UndoSnapshot,
-} from '@vigilo/core'
-import { createStorageKeys } from '@vigilo/core'
-import { createDefaultState } from '@vigilo/core'
-import { createVigiloStore, type VigiloStore } from '@vigilo/core'
+} from '@remcostoeten/vigilo-core'
+import { createStorageKeys } from '@remcostoeten/vigilo-core'
+import { createDefaultState } from '@remcostoeten/vigilo-core'
+import { createVigiloStore, type VigiloStore } from '@remcostoeten/vigilo-core'
 import { generateSelector, getElementLabel } from './dom'
-import { calculateBezier } from '@vigilo/core'
+import { calculateBezier } from '@remcostoeten/vigilo-core'
 import { MAX_VISIBLE_ITEMS, UNDO_WINDOW_MS } from './constants'
 import type { VigiloProps, CategoryConfig } from './types'
 import { updatePaletteInstance, removePaletteInstance } from './registry'

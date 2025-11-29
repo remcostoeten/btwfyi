@@ -1,5 +1,5 @@
 {
-  "name": "@vigilo/vue",
+  "name": "@remcostoeten/vigilo-vue",
   "version": "0.0.12",
   "description": "Vue bindings for Vigilo task awareness overlay",
   "author": "Remco Stoeten",
@@ -26,7 +26,7 @@
     "vue": ">=3.4.0"
   },
   "dependencies": {
-    "@vigilo/core": "^0.0.12"
+    "@remcostoeten/vigilo-core": "^0.0.12"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",

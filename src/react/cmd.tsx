@@ -89,6 +89,39 @@ export function VigiloCommandPalette({
     setSelectedIndex(null)
   }, [])
 
+  const managementMode = query.trim().toLowerCase() === 'vigilo'
+
+  const tasks = useMemo(() => {
+    return instances.flatMap((instance) =>
+      instance.tasks.map((task) => ({
+        instance,
+        task,
+      }))
+    )
+  }, [instances])
+
+  const filteredTasks = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q || managementMode) return tasks
+    return tasks.filter(({ task, instance }) => {
+      const haystack = `${task.text} ${task.status} ${instance?.label ?? ''} ${instance?.categoryId ?? ''}`.toLowerCase()
+      return haystack.includes(q)
+    })
+  }, [managementMode, query, tasks])
+
+  const handleSelectTask = useCallback(
+    (task: PaletteTaskSnapshot) => {
+      task.focusTask()
+      closePalette()
+    },
+    [closePalette]
+  )
+
+  // Reset selected index when query or filtered tasks change
+  useEffect(() => {
+    setSelectedIndex(null)
+  }, [query, filteredTasks.length])
+
   useEffect(() => {
     if (disableShortcut || shortcutKey === null) return
 
@@ -96,7 +129,7 @@ export function VigiloCommandPalette({
       if (isEditableElement(e.target)) return
 
       const key = e.key.toLowerCase()
-      const targetKey = shortcutKey.toLowerCase()
+      const targetKey = shortcutKey?.toLowerCase() ?? ''
       
       // Check if the configured shortcut is pressed
       const modifierPressed =
@@ -172,7 +205,7 @@ export function VigiloCommandPalette({
         e.preventDefault()
         if (selectedIndex !== null && filteredTasks[selectedIndex]) {
           handleSelectTask(filteredTasks[selectedIndex].task)
-        } else if (filteredTasks.length > 0) {
+        } else if (filteredTasks.length > 0 && filteredTasks[0]) {
           handleSelectTask(filteredTasks[0].task)
         }
         return
@@ -190,39 +223,6 @@ export function VigiloCommandPalette({
     window.addEventListener('keydown', handlePaletteKeyDown)
     return () => window.removeEventListener('keydown', handlePaletteKeyDown)
   }, [isOpen, selectedIndex, filteredTasks, handleSelectTask, managementMode])
-
-  const managementMode = query.trim().toLowerCase() === 'vigilo'
-
-  const tasks = useMemo(() => {
-    return instances.flatMap((instance) =>
-      instance.tasks.map((task) => ({
-        instance,
-        task,
-      }))
-    )
-  }, [instances])
-
-  const filteredTasks = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q || managementMode) return tasks
-    return tasks.filter(({ task, instance }) => {
-      const haystack = `${task.text} ${task.status} ${instance.label} ${instance.categoryId}`.toLowerCase()
-      return haystack.includes(q)
-    })
-  }, [managementMode, query, tasks])
-
-  // Reset selected index when query or filtered tasks change
-  useEffect(() => {
-    setSelectedIndex(null)
-  }, [query, filteredTasks.length])
-
-  const handleSelectTask = useCallback(
-    (task: PaletteTaskSnapshot) => {
-      task.focusTask()
-      closePalette()
-    },
-    [closePalette]
-  )
 
   const handleClearConnection = useCallback((task: PaletteTaskSnapshot) => {
     task.clearConnection?.()
@@ -252,7 +252,7 @@ export function VigiloCommandPalette({
               ref={inputRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search Vigilo tasks… (type "vigilo" for management view)"
+              placeholder='Search Vigilo tasks… (type "vigilo" for management view)'
               className="flex-1 bg-transparent text-base focus:outline-none placeholder:text-zinc-500"
               aria-label="Search tasks"
               aria-autocomplete="list"

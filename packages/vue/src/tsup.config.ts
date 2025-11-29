@@ -11,5 +11,5 @@ export default defineConfig({
   clean: true,
   treeshake: true,
   minify: false,
-  external: ['vue', '@vigilo/core'],
+  external: ['vue', '@remcostoeten/vigilo-core'],
 })

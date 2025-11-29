@@ -289,7 +289,7 @@ export function VigiloCommandPalette({
                 const isSelected = selectedIndex === index
                 return (
                   <li key={task.id} role="option" aria-selected={isSelected}>
-                    <button
+                  <button
                       ref={(el) => {
                         taskButtonRefs.current[index] = el
                       }}
@@ -298,42 +298,42 @@ export function VigiloCommandPalette({
                           ? 'bg-blue-500/20 ring-2 ring-blue-500'
                           : 'hover:bg-white/5'
                       }`}
-                      onClick={() => handleSelectTask(task)}
+                    onClick={() => handleSelectTask(task)}
                       onMouseEnter={() => setSelectedIndex(index)}
                       aria-label={`${task.text}, Status: ${task.status}, Instance: ${instance.label}${task.hasConnection ? ', Has connection' : ''}`}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-medium text-zinc-100">
-                          {task.text}
-                        </span>
-                        <span className="text-2xs inline-flex items-center gap-1 rounded-full border border-zinc-800 px-2 py-0.5 text-zinc-400">
-                          {instance.label}
-                          {task.hasConnection && (
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium text-zinc-100">
+                        {task.text}
+                      </span>
+                      <span className="text-2xs inline-flex items-center gap-1 rounded-full border border-zinc-800 px-2 py-0.5 text-zinc-400">
+                        {instance.label}
+                        {task.hasConnection && (
                             <span
                               className="inline-flex h-2 w-2 rounded-full bg-blue-400"
                               aria-label="Has connection"
                             />
-                          )}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs text-zinc-500">
-                        <span>Status: {task.status}</span>
-                        {task.hasConnection && (
-                          <button
-                            type="button"
-                            className="text-xs text-rose-400 hover:underline"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleClearConnection(task)
-                            }}
-                            aria-label={`Remove connection for ${task.text}`}
-                          >
-                            Remove connection
-                          </button>
                         )}
-                      </div>
-                    </button>
-                  </li>
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-zinc-500">
+                      <span>Status: {task.status}</span>
+                      {task.hasConnection && (
+                        <button
+                          type="button"
+                          className="text-xs text-rose-400 hover:underline"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleClearConnection(task)
+                          }}
+                            aria-label={`Remove connection for ${task.text}`}
+                        >
+                          Remove connection
+                        </button>
+                      )}
+                    </div>
+                  </button>
+                </li>
                 )
               })}
             </ul>

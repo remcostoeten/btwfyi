@@ -81,6 +81,9 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
   const [storeState, setStoreState] = useState(defaultState)
   const [isExpanded, setIsExpanded] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [settingsMenuIndex, setSettingsMenuIndex] = useState<number | null>(null)
+  const settingsMenuRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const settingsMenuContainerRef = useRef<HTMLDivElement | null>(null)
   const [canUndo, setCanUndo] = useState(false)
   const [openIssueIndex, setOpenIssueIndex] = useState<number | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null)
@@ -662,9 +665,23 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
     }
   }, [openIssueIndex])
 
-  // Settings menu keyboard accessibility
+  // Settings menu keyboard accessibility and focus trap
   useEffect(() => {
-    if (!isSettingsOpen) return
+    if (!isSettingsOpen) {
+      setSettingsMenuIndex(null)
+      return
+    }
+
+    // Lock body scroll when settings menu is open
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    // Get all focusable elements in the settings menu
+    const menuContainer = settingsMenuContainerRef.current
+    const menuButtons = menuContainer
+      ? Array.from(menuContainer.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]'))
+      : settingsMenuRefs.current.filter(Boolean) as HTMLButtonElement[]
+    const menuButtonCount = menuButtons.length
 
     function onKeyDown(e: KeyboardEvent) {
       // Close on Escape
@@ -672,6 +689,35 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
         e.preventDefault()
         e.stopPropagation()
         setIsSettingsOpen(false)
+        return
+      }
+
+      // Arrow key navigation
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        e.stopPropagation()
+        setSettingsMenuIndex((prev) => {
+          if (prev === null) return 0
+          return prev < menuButtonCount - 1 ? prev + 1 : 0
+        })
+        return
+      }
+
+      if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        e.stopPropagation()
+        setSettingsMenuIndex((prev) => {
+          if (prev === null) return menuButtonCount - 1
+          return prev > 0 ? prev - 1 : menuButtonCount - 1
+        })
+        return
+      }
+
+      // Enter to activate selected item
+      if (e.key === 'Enter' && settingsMenuIndex !== null && menuButtons[settingsMenuIndex]) {
+        e.preventDefault()
+        e.stopPropagation()
+        menuButtons[settingsMenuIndex].click()
         return
       }
 
@@ -722,9 +768,48 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
       }
     }
 
+      // Focus trap: prevent focus from escaping the menu
+      function handleFocus(e: FocusEvent) {
+        const target = e.target as HTMLElement
+        const menuElement = menuContainer || settingsMenuRefs.current[0]?.closest('[role="menu"]')
+        
+        if (menuElement && !menuElement.contains(target) && document.activeElement !== menuElement) {
+          e.preventDefault()
+          e.stopPropagation()
+          menuButtons[0]?.focus()
+        }
+      }
+
+    // Focus the first button when menu opens
+    if (menuButtons.length > 0) {
+      setTimeout(() => {
+        menuButtons[0]?.focus()
+        setSettingsMenuIndex(0)
+      }, 0)
+    }
+
     window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [isSettingsOpen, canUndo, displayMode, isHidden])
+    document.addEventListener('focusin', handleFocus)
+    
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('focusin', handleFocus)
+      document.body.style.overflow = originalOverflow
+    }
+  }, [isSettingsOpen, canUndo, displayMode, isHidden, settingsMenuIndex])
+
+  // Update focus when menu index changes
+  useEffect(() => {
+    if (isSettingsOpen && settingsMenuIndex !== null && settingsMenuContainerRef.current) {
+      const menuButtons = Array.from(
+        settingsMenuContainerRef.current.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]')
+      )
+      const button = menuButtons[settingsMenuIndex]
+      if (button) {
+        button.focus()
+      }
+    }
+  }, [isSettingsOpen, settingsMenuIndex])
 
   function startDrag(e: React.MouseEvent) {
     if (panelRef.current) {
@@ -1283,36 +1368,61 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                 </button>
                 {isSettingsOpen && (
                   <div
+                    ref={settingsMenuContainerRef}
+                    role="menu"
+                    aria-label="Vigilo settings menu"
                     className="absolute right-0 top-full mt-2 w-56 rounded-md border border-zinc-800 bg-zinc-950 py-1 text-xs text-zinc-200 shadow-xl z-[60]"
                     onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => {
+                      // Prevent default browser behavior for arrow keys
+                      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                        e.preventDefault()
+                      }
+                    }}
                   >
                     <button
-                      className={`flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5 ${
+                      ref={(el) => (settingsMenuRefs.current[0] = el)}
+                      role="menuitem"
+                      aria-selected={settingsMenuIndex === 0}
+                      className={`flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5 focus:bg-white/10 focus:outline-none ${
                         displayMode === 'full' ? 'text-white' : ''
-                      }`}
+                      } ${settingsMenuIndex === 0 ? 'bg-white/10' : ''}`}
                       onClick={() => handleSetMode('full')}
                     >
                       <span>Full panel</span>
                       <span className="text-[10px] opacity-50 font-mono">1</span>
                     </button>
                     <button
-                      className={`flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5 ${
+                      ref={(el) => (settingsMenuRefs.current[1] = el)}
+                      role="menuitem"
+                      aria-selected={settingsMenuIndex === 1}
+                      className={`flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5 focus:bg-white/10 focus:outline-none ${
                         displayMode === 'compact' ? 'text-white' : ''
-                      }`}
+                      } ${settingsMenuIndex === 1 ? 'bg-white/10' : ''}`}
                       onClick={() => handleSetMode('compact')}
                     >
                       <span>Compact panel</span>
                       <span className="text-[10px] opacity-50 font-mono">2</span>
                     </button>
                     <button
-                      className="flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5"
+                      ref={(el) => (settingsMenuRefs.current[2] = el)}
+                      role="menuitem"
+                      aria-selected={settingsMenuIndex === 2}
+                      className={`flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5 focus:bg-white/10 focus:outline-none ${
+                        settingsMenuIndex === 2 ? 'bg-white/10' : ''
+                      }`}
                       onClick={() => handleSetMode('minimal')}
                     >
                       <span>Minimal dot</span>
                       <span className="text-[10px] opacity-50 font-mono">3</span>
                     </button>
                     <button
-                      className="flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5"
+                      ref={(el) => (settingsMenuRefs.current[3] = el)}
+                      role="menuitem"
+                      aria-selected={settingsMenuIndex === 3}
+                      className={`flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5 focus:bg-white/10 focus:outline-none ${
+                        settingsMenuIndex === 3 ? 'bg-white/10' : ''
+                      }`}
                       onClick={handleToggleLines}
                     >
                       <span>Show connection lines</span>
@@ -1321,7 +1431,12 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                       </span>
                     </button>
                     <button
-                      className="flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5"
+                      ref={(el) => (settingsMenuRefs.current[4] = el)}
+                      role="menuitem"
+                      aria-selected={settingsMenuIndex === 4}
+                      className={`flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5 focus:bg-white/10 focus:outline-none ${
+                        settingsMenuIndex === 4 ? 'bg-white/10' : ''
+                      }`}
                       onClick={handleToggleBadges}
                     >
                       <span>Show badges</span>
@@ -1339,11 +1454,18 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                           { color: 'rgb(34, 197, 94)', label: 'Green' },
                           { color: 'rgb(239, 68, 68)', label: 'Red' },
                           { color: 'rgb(234, 179, 8)', label: 'Yellow' },
-                        ].map(({ color, label }) => (
+                        ].map(({ color, label }, idx) => (
                           <button
                             key={color}
+                            ref={(el) => {
+                              // Store refs for line color buttons starting at index 5
+                              if (settingsMenuRefs.current.length <= 5 + idx) {
+                                settingsMenuRefs.current[5 + idx] = el
+                              }
+                            }}
+                            role="menuitem"
                             onClick={() => handleSetLineColor(color)}
-                            className={`h-5 w-5 rounded border-2 transition-all ${
+                            className={`h-5 w-5 rounded border-2 transition-all focus:outline-none focus:ring-2 focus:ring-white/50 ${
                               lineColor === color ? 'border-white scale-110' : 'border-zinc-700 hover:border-zinc-600'
                             }`}
                             style={{ backgroundColor: color }}

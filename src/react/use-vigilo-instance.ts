@@ -1,5 +1,5 @@
 import { useMemo, useRef, useEffect } from 'react'
-import { createVigiloStore, createStorageKeys, type VigiloStore, type Connection } from '@vigilo/core'
+import { createVigiloStore, createStorageKeys, type VigiloStore, type Connection } from '../core'
 import { generateSelector, getElementLabel } from './dom'
 
 export interface UseVigiloInstanceOptions {

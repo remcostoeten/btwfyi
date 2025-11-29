@@ -440,11 +440,11 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
-import type { CategoryConfig, Connection, DisplayMode, Pos, TodoStatus, UndoSnapshot } from '@vigilo/core'
-import { calculateBezier } from '@vigilo/core'
-import { createStorageKeys } from '@vigilo/core'
-import { createDefaultState } from '@vigilo/core'
-import { createVigiloStore, type VigiloStore } from '@vigilo/core'
+import type { CategoryConfig, Connection, DisplayMode, Pos, TodoStatus, UndoSnapshot } from '@remcostoeten/vigilo-core'
+import { calculateBezier } from '@remcostoeten/vigilo-core'
+import { createStorageKeys } from '@remcostoeten/vigilo-core'
+import { createDefaultState } from '@remcostoeten/vigilo-core'
+import { createVigiloStore, type VigiloStore } from '@remcostoeten/vigilo-core'
 import { generateSelector, getElementLabel } from './dom'
 import { MAX_VISIBLE_ITEMS, UNDO_WINDOW_MS } from './constants'
 import type { VigiloProps } from './types'

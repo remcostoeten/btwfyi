@@ -16,7 +16,7 @@
       "name": "vigilo-react-example",
       "version": "0.0.1",
       "dependencies": {
-        "@vigilo/react": "^0.0.11",
+        "@remcostoeten/vigilo-react": "^0.0.12",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
       },
@@ -32,7 +32,7 @@
       "name": "vigilo-vue-example",
       "version": "0.0.1",
       "dependencies": {
-        "@vigilo/vue": "^0.0.11",
+        "@remcostoeten/vigilo-vue": "^0.0.12",
         "vue": "^3.5.13",
       },
       "devDependencies": {
@@ -42,8 +42,8 @@
       },
     },
     "packages/core": {
-      "name": "@vigilo/core",
-      "version": "0.0.11",
+      "name": "@remcostoeten/vigilo-core",
+      "version": "0.0.12",
       "devDependencies": {
         "@types/node": "^24.10.1",
         "tsup": "^8.5.1",
@@ -51,10 +51,10 @@
       },
     },
     "packages/react": {
-      "name": "@vigilo/react",
-      "version": "0.0.11",
+      "name": "@remcostoeten/vigilo-react",
+      "version": "0.0.12",
       "dependencies": {
-        "@vigilo/core": "^0.0.11",
+        "@remcostoeten/vigilo-core": "^0.0.12",
       },
       "devDependencies": {
         "@types/node": "^24.10.1",
@@ -69,10 +69,10 @@
       },
     },
     "packages/vue": {
-      "name": "@vigilo/vue",
-      "version": "0.0.11",
+      "name": "@remcostoeten/vigilo-vue",
+      "version": "0.0.12",
       "dependencies": {
-        "@vigilo/core": "^0.0.11",
+        "@remcostoeten/vigilo-core": "^0.0.12",
       },
       "devDependencies": {
         "@types/node": "^24.10.1",
@@ -186,6 +186,12 @@
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
+    "@remcostoeten/vigilo-core": ["@remcostoeten/vigilo-core@workspace:packages/core"],
+
+    "@remcostoeten/vigilo-react": ["@remcostoeten/vigilo-react@workspace:packages/react"],
+
+    "@remcostoeten/vigilo-vue": ["@remcostoeten/vigilo-vue@workspace:packages/vue"],
+
     "@rolldown/pluginutils": ["@rolldown/pluginutils@1.0.0-beta.27", "", {}, "sha512-+d0F4MKMCbeVUJwG96uQ4SgAznZNSq93I3V+9NHA4OpvqG8mRCpGdKmK8l/dl02h2CCDHwW2FqilnTyDcAnqjA=="],
 
     "@rollup/rollup-android-arm-eabi": ["@rollup/rollup-android-arm-eabi@4.53.3", "", { "os": "android", "cpu": "arm" }, "sha512-mRSi+4cBjrRLoaal2PnqH82Wqyb+d3HsPUN/W+WslCXsZsyHa9ZeQQX/pQsZaVIWDkPcpV6jJ+3KLbTbgnwv8w=="],
@@ -249,12 +255,6 @@
     "@types/react": ["@types/react@18.3.27", "", { "dependencies": { "@types/prop-types": "*", "csstype": "^3.2.2" } }, "sha512-cisd7gxkzjBKU2GgdYrTdtQx1SORymWyaAFhaxQPK9bYO9ot3Y5OikQRvY0VYQtvwjeQnizCINJAenh/V7MK2w=="],
 
     "@types/react-dom": ["@types/react-dom@18.3.7", "", { "peerDependencies": { "@types/react": "^18.0.0" } }, "sha512-MEe3UeoENYVFXzoXEWsvcpg6ZvlrFNlOQ7EOsvhI3CfAXwzPfO8Qwuxd40nepsYKqyyVQnTdEfv68q91yLcKrQ=="],
-
-    "@vigilo/core": ["@vigilo/core@workspace:packages/core"],
-
-    "@vigilo/react": ["@vigilo/react@workspace:packages/react"],
-
-    "@vigilo/vue": ["@vigilo/vue@workspace:packages/vue"],
 
     "@vitejs/plugin-react": ["@vitejs/plugin-react@4.7.0", "", { "dependencies": { "@babel/core": "^7.28.0", "@babel/plugin-transform-react-jsx-self": "^7.27.1", "@babel/plugin-transform-react-jsx-source": "^7.27.1", "@rolldown/pluginutils": "1.0.0-beta.27", "@types/babel__core": "^7.20.5", "react-refresh": "^0.17.0" }, "peerDependencies": { "vite": "^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0" } }, "sha512-gUu9hwfWvvEDBBmgtAowQCojwZmJ5mcLn3aufeCsitijs3+f2NsrPtlAWIR6OPiqljl96GVCUbLe0HyqIpVaoA=="],
 

@@ -1,4 +1,4 @@
-import type { CategoryConfig, VigiloConfig } from '@vigilo/core'
+import type { CategoryConfig, VigiloConfig } from '@remcostoeten/vigilo-core'
 import type { baseTheme, baseStyles } from './constants'
 
 export type { CategoryConfig, VigiloConfig }

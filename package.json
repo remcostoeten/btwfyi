@@ -1,5 +1,5 @@
 {
-  "name": "vigilo-monorepo",
+  "name": "@remcostoeten/vigilo",
   "version": "0.0.12",
   "description": "A lightweight task awareness overlay for development environments",
   "author": "Remco Stoeten",
@@ -15,17 +15,53 @@
     "developer-tools",
     "awareness"
   ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.mjs",
+      "require": "./dist/react/index.js"
+    },
+    "./vue": {
+      "types": "./dist/vue/index.d.ts",
+      "import": "./dist/vue/index.mjs",
+      "require": "./dist/vue/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "workspaces": [
-    "packages/*",
     "examples/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
-    "dev": "npm run dev --workspaces",
-    "typecheck": "npm run typecheck --workspaces",
-    "clean": "npm run clean --workspaces",
-    "example:react": "npm run dev --workspace=vigilo-react-example",
-    "example:vue": "npm run dev --workspace=vigilo-vue-example"
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist packages/*/dist"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "vue": ">=3.4.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/node": "^24.10.1",

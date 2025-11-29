@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
-import { Vigilo, useVigiloInstance } from '@vigilo/react'
-import type { CategoryConfig } from '@vigilo/react'
+import { Vigilo, useVigiloInstance } from '@remcostoeten/vigilo/react'
+import type { CategoryConfig } from '@remcostoeten/vigilo/react'
 
 const categories: readonly CategoryConfig[] = [
   {
@@ -31,41 +31,69 @@ const categories: readonly CategoryConfig[] = [
         priority: 'high',
         tags: ['testing', 'backend'],
       },
+    ],
+  },
+  {
+    id: 'design',
+    displayName: 'Design Tasks',
+    items: [
       {
-        text: 'Optimize database queries',
-        action: 'PERFORMANCE',
-        description: 'Review and optimize slow database queries',
-        info: 'Check query execution plans and add indexes where needed',
-        priority: 'medium',
-        tags: ['database', 'performance'],
+        text: 'Create landing page mockup',
+        action: 'DESIGN',
+        description: 'Design a modern landing page with hero section',
+        info: 'Focus on mobile-first responsive design',
+        priority: 'high',
+        tags: ['ui', 'design', 'frontend'],
       },
       {
-        text: 'Update documentation',
-        action: 'DOCS',
-        description: 'Keep API and component documentation up to date',
-        info: 'Use JSDoc for code documentation',
+        text: 'Design user dashboard',
+        action: 'DESIGN',
+        description: 'Create wireframes for the main dashboard',
+        info: 'Include data visualization components',
+        priority: 'medium',
+        tags: ['design', 'dashboard'],
+      },
+      {
+        text: 'Update brand colors',
+        action: 'BRAND',
+        description: 'Refresh the color palette to match new brand guidelines',
+        info: 'Ensure accessibility contrast ratios',
         priority: 'low',
-        tags: ['documentation'],
+        tags: ['brand', 'design'],
       },
     ],
   },
 ] as const
 
 function App() {
-  // Access the Vigilo instance to add demo connections
-  const { addConnection } = useVigiloInstance({ instanceId: 'development' })
+  // Access both Vigilo instances to add demo connections
+  const devInstance = useVigiloInstance({ instanceId: 'development' })
+  const designInstance = useVigiloInstance({ instanceId: 'design' })
 
-  // Add a demo connection on mount
+  // Add demo connections on mount with longer paths
   useEffect(() => {
     // Wait a bit for the DOM to be ready
     const timer = setTimeout(() => {
+      // Connect first dev task to feature-1 (top left)
       const feature1 = document.querySelector('#feature-1')
       if (feature1) {
-        addConnection(0, feature1, 'Feature 1')
+        devInstance.addConnection(0, feature1, 'Feature 1')
       }
-    }, 100)
+
+      // Connect first design task to feature-4 (bottom right) - this creates a longer connection
+      const feature4 = document.querySelector('#feature-4')
+      if (feature4) {
+        designInstance.addConnection(0, feature4, 'Feature 4')
+      }
+
+      // Connect second dev task to feature-2 (top right)
+      const feature2 = document.querySelector('#feature-2')
+      if (feature2) {
+        devInstance.addConnection(1, feature2, 'Feature 2')
+      }
+    }, 200)
     return () => clearTimeout(timer)
-  }, [addConnection])
+  }, [devInstance, designInstance])
 
   return (
     <div className="min-h-screen bg-zinc-900 text-zinc-100 p-8">
@@ -75,50 +103,55 @@ function App() {
           <p className="text-zinc-400">
             A task awareness overlay for development environments
           </p>
+          <p className="text-sm text-zinc-500">
+            This demo shows two Vigilo instances with connection lines
+          </p>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div
             id="feature-1"
-            className="p-6 bg-zinc-800 rounded-lg border border-zinc-700 hover:border-blue-500 transition-colors"
+            className="p-6 bg-zinc-800 rounded-lg border-2 border-blue-500/50 hover:border-blue-500 transition-colors"
           >
             <h2 className="text-xl font-semibold mb-2">Feature 1</h2>
             <p className="text-zinc-400">
-              This is a feature that can be connected to a Vigilo task. Right-click
-              on a task in the overlay to connect it to this element.
+              Connected to Development task #1. Notice the connection line going
+              from the top-left overlay to this element.
             </p>
           </div>
 
           <div
             id="feature-2"
-            className="p-6 bg-zinc-800 rounded-lg border border-zinc-700 hover:border-blue-500 transition-colors"
+            className="p-6 bg-zinc-800 rounded-lg border-2 border-blue-500/50 hover:border-blue-500 transition-colors"
           >
             <h2 className="text-xl font-semibold mb-2">Feature 2</h2>
             <p className="text-zinc-400">
-              Another feature that can be connected. Try connecting multiple tasks
-              to different elements on the page.
+              Connected to Development task #2. This shows how multiple tasks can
+              connect to different elements.
             </p>
           </div>
 
           <div
             id="feature-3"
-            className="p-6 bg-zinc-800 rounded-lg border border-zinc-700 hover:border-blue-500 transition-colors"
+            className="p-6 bg-zinc-800 rounded-lg border border-zinc-700 hover:border-purple-500 transition-colors"
           >
             <h2 className="text-xl font-semibold mb-2">Feature 3</h2>
             <p className="text-zinc-400">
               You can also use freeroam mode by holding Shift while right-clicking
-              on a task.
+              on a task to create custom connection paths.
             </p>
           </div>
 
           <div
             id="feature-4"
-            className="p-6 bg-zinc-800 rounded-lg border border-zinc-700 hover:border-blue-500 transition-colors"
+            className="p-6 bg-zinc-800 rounded-lg border-2 border-purple-500/50 hover:border-purple-500 transition-colors"
           >
             <h2 className="text-xl font-semibold mb-2">Feature 4</h2>
             <p className="text-zinc-400">
-              The overlay remembers your connections and position across page
-              reloads.
+              Connected to Design task #1. This creates a longer connection line
+              going from the bottom-right overlay (Design panel) all the way to
+              this element, demonstrating how connection lines navigate around
+              the page.
             </p>
           </div>
         </div>
@@ -137,7 +170,21 @@ function App() {
         </div>
       </div>
 
-      <Vigilo categories={categories} category="development" enabled={true} />
+      {/* First Vigilo instance - Development tasks */}
+      <Vigilo 
+        categories={categories} 
+        category="development" 
+        enabled={true}
+        instanceId="development"
+      />
+      
+      {/* Second Vigilo instance - Design tasks */}
+      <Vigilo 
+        categories={categories} 
+        category="design" 
+        enabled={true}
+        instanceId="design"
+      />
     </div>
   )
 }

@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@vigilo/vue': path.resolve(__dirname, '../../packages/vue/src'),
-      '@vigilo/core': path.resolve(__dirname, '../../packages/core/src'),
+      '@remcostoeten/vigilo/vue': path.resolve(__dirname, '../../src/vue'),
+      '@remcostoeten/vigilo': path.resolve(__dirname, '../../src/core'),
     },
   },
 })

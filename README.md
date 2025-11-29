@@ -8,11 +8,11 @@ A lightweight task awareness overlay for development environments. Vigilo keeps 
 ## Installation
 
 ```bash
-npm install vigilo
+npm install @remcostoeten/vigilo
 # or
-pnpm add vigilo
+pnpm add @remcostoeten/vigilo
 # or
-yarn add vigilo
+yarn add @remcostoeten/vigilo
 ```
 
 ## Usage
@@ -20,8 +20,8 @@ yarn add vigilo
 ### React
 
 ```tsx
-import { Vigilo } from 'vigilo/react'
-import type { CategoryConfig } from 'vigilo/react'
+import { Vigilo } from '@remcostoeten/vigilo/react'
+import type { CategoryConfig } from '@remcostoeten/vigilo/react'
 
 const categories: CategoryConfig[] = [
   {
@@ -52,7 +52,7 @@ import {
   savePosition,
   calculateBezier,
 } from 'vigilo'
-import { generateSelector } from 'vigilo/react'
+import { generateSelector } from '@remcostoeten/vigilo/react'
 
 const keys = createStorageKeys('my-instance')
 const state = loadState(keys)
@@ -94,7 +94,7 @@ type TodoItem = {
 ### Vue Composition
 
 ```ts
-import { useVigiloStore } from 'vigilo/vue'
+import { useVigiloStore } from '@remcostoeten/vigilo/vue'
 
 const { state, store } = useVigiloStore({
   category: 'dev',
@@ -111,7 +111,7 @@ The framework-agnostic core provides utilities for:
 - Storage management (`createStorageKeys`, `loadState`, `savePosition`, etc.)
 - Connection calculations (`calculateBezier`)
 
-DOM helpers such as `generateSelector`, `getElementLabel`, and `isValidSelector` live in the React bundle (`vigilo/react`) because they require direct browser access.
+DOM helpers such as `generateSelector`, `getElementLabel`, and `isValidSelector` live in the React bundle (`@remcostoeten/vigilo/react`) because they require direct browser access.
 
 ## Command Palette
 
