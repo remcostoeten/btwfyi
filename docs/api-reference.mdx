@@ -1,0 +1,256 @@
+---
+title: API Reference
+description: Complete API documentation for Vigilo components and hooks
+---
+
+# API Reference
+
+This page documents all available components, hooks, and types in the Vigilo package.
+
+## Core Types
+
+### Pos
+
+Type for position coordinates.
+
+```ts
+interface Pos {
+  x: number
+  y: number
+}
+```
+
+### TodoStatus
+
+Status enumeration for tasks.
+
+```ts
+type TodoStatus = 'todo' | 'working' | 'done'
+```
+
+### Connection
+
+Type for task connections.
+
+```ts
+interface Connection {
+  todoIndex: number
+  targetLabel?: string
+  targetPosition?: Pos
+}
+```
+
+### DisplayMode
+
+Panel display modes.
+
+```ts
+type DisplayMode = 'full' | 'compact' | 'minimal'
+```
+
+### Theme
+
+Theme configuration object.
+
+```ts
+interface Theme {
+  colors: {
+    primary: string
+    primaryDim: string
+    freeroam: string
+    textMain: string
+    textDim: string
+    bgPanel: string
+    borderPanel: string
+    bgOverlay: string
+  }
+  layout: {
+    panel: string
+    item: string
+    header: string
+    badge: string
+  }
+  z: {
+    lines: number
+    overlay: number
+    panel: number
+  }
+}
+```
+
+### CategoryConfig
+
+Configuration for task categories.
+
+```ts
+interface CategoryConfig {
+  id: string
+  displayName?: string
+  defaultStatus?: TodoStatus
+  allowConnections?: boolean
+  color?: string
+}
+```
+
+## React Components
+
+### Vigilo
+
+Main component for task awareness overlay.
+
+```tsx
+interface VigiloProps<TCategories extends readonly CategoryConfig[] = CategoryConfig[]> {
+  category: string
+  instanceId?: string
+  categories: TCategories
+  themeOverrides?: ThemeOverrides
+  stylesOverrides?: Styles
+  colorMode?: 'auto' | 'light' | 'dark'
+}
+```
+
+### VigiloCommandPalette
+
+Global command palette component.
+
+```tsx
+interface VigiloCommandPaletteProps {
+  shortcutKey?: string | null      // Default: 'k'
+  shortcutModifier?: 'alt' | 'ctrl' | 'meta' | 'shift'   // Default: 'alt'
+  disableShortcut?: boolean      // Default: false
+}
+```
+
+## React Hooks
+
+### useVigiloInstance
+
+Hook for creating and managing Vigilo instances.
+
+```tsx
+function useVigiloInstance<TCategories extends readonly CategoryConfig[] = CategoryConfig[]>(
+  props: VigiloProps<TCategories>
+): {
+  connect: (taskId: number, target: Element | string) => void
+  disconnect: (taskId: number) => void
+  focus: (category?: string, taskId?: number) => void
+  focusNext: () => void
+  focusPrevious: () => void
+  toggleDisplay: (mode?: DisplayMode) => void
+  setVisibility: (visible: boolean) => void
+} | null
+```
+
+### useVigiloConnection
+
+Hook for managing connections between tasks.
+
+```tsx
+function useVigiloConnection(
+  instanceId: string
+): {
+  connect: (taskId: number, target: Element | string) => void
+  disconnect: (taskId: number) => void
+  getConnectedElements: () => Element[]
+  getConnections: () => Connection[]
+} | null
+```
+
+## Vue Components
+
+### Vigilo
+
+Main Vue component with same props as React version.
+
+```vue
+<script setup lang="ts">
+interface Props {
+  category: string
+  instanceId?: string
+  categories: CategoryConfig[]
+  themeOverrides?: ThemeOverrides
+  stylesOverrides?: Styles
+  colorMode?: 'auto' | 'light' | 'dark'
+}
+</script>
+```
+
+## Vue Composables
+
+### useVigiloStore
+
+Vue composable for state management.
+
+```ts
+function useVigiloStore(
+  instanceKey: string,
+  overrides?: VigiloStateOverrides
+): {
+  state: Ref<VigiloState>
+  addTask: (task: Omit<CreateTask, 'id'>) => void
+  updateTask: (index: number, task: Partial<VigiloTask>) => void
+  deleteTask: (index: number) => void
+  toggleTask: (index: number) => void
+  setLineOpacity: (opacity: number) => void
+  setComponentOpacity: (opacity: number) => void
+  // ... other methods
+}
+```
+
+### useVigiloConnection
+
+Vue composable for connection management.
+
+```ts
+function useVigiloConnection(
+  instanceId: string
+): {
+  connect: (taskId: number, target: Element | string) => void
+  disconnect: (taskId: number) => void
+  getConnectedElements: () => Element[]
+  getConnections: () => Connection[]
+} | null
+```
+
+## Constants
+
+### MAX_VISIBLE_ITEMS
+
+Maximum number of items displayed in panel.
+
+```ts
+export const MAX_VISIBLE_ITEMS = 3
+```
+
+### UNDO_WINDOW_MS
+
+Time window for undo functionality (in milliseconds).
+
+```ts
+export const UNDO_WINDOW_MS = 8000
+```
+
+## Core Functions
+
+### createVigiloStore
+
+Factory function for creating Vigilo store instances.
+
+```ts
+function createVigiloStore(
+  keys: StorageKeys,
+  overrides?: VigiloStateOverrides
+): VigiloStore
+```
+
+### createStorageKeys
+
+Creates namespaced storage keys for multiple instances.
+
+```ts
+function createStorageKeys(instanceKey: string): StorageKeys
+```
+
+## Examples
+
+See the [Getting Started](/getting-started) guide for practical usage examples.

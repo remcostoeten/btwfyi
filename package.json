@@ -48,7 +48,9 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist packages/*/dist",
     "build:packages": "npm run build --workspaces --if-present",
-    "dev:packages": "npm run dev --workspaces --if-present"
+    "dev:packages": "npm run dev --workspaces --if-present",
+    "docs": "bunx fumadocs build",
+    "docs:dev": "bunx fumadocs dev"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
@@ -70,9 +72,10 @@
     "@types/node": "^24.10.1",
     "@types/react": "^18.3.27",
     "@types/react-dom": "^18.3.7",
-    "vue": "^3.5.13",
+    "fumadocs": "^0.0.0",
     "tsup": "^8.5.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vue": "^3.5.13"
   },
   "engines": {
     "node": ">=18"

@@ -1,0 +1,199 @@
+---
+title: React Integration
+description: How to integrate Vigilo in React applications
+---
+
+# React Integration
+
+Vigilo provides React components with hooks-based state management for task awareness.
+
+## Installation
+
+```bash
+npm install @remcostoeten/vigilo
+```
+
+## Basic Usage
+
+```tsx
+import { Vigilo } from '@remcostoeten/vigilo/react'
+import type { CategoryConfig } from '@remcostoeten/vigilo/react'
+
+const categories: CategoryConfig[] = [
+  {
+    id: 'backend',
+    displayName: 'Backend Tasks',
+    items: [
+      { text: 'Fix user authentication bug', status: 'working' },
+      { text: 'Add API rate limiting', status: 'todo' },
+      { text: 'Implement password reset', status: 'todo' }
+    ]
+  },
+  {
+    id: 'frontend',
+    displayName: 'Frontend Tasks',
+    items: [
+      { text: 'Update dashboard layout', status: 'done' },
+      { text: 'Add dark mode support', status: 'todo' },
+      { text: 'Fix responsive bugs', status: 'working' }
+    ]
+  }
+]
+
+function App() {
+  return (
+    <div>
+      <Vigilo
+        category="backend"
+        instanceId="main-backend"
+        categories={categories}
+      />
+      <Vigilo
+        category="frontend"
+        instanceId="main-frontend"
+        categories={categories}
+      />
+    </div>
+  )
+}
+```
+
+## Advanced Usage
+
+### Custom Themes
+
+```tsx
+import type { VigiloThemeOverrides } from '@remcostoeten/vigilo/react'
+
+const customTheme: VigiloThemeOverrides = {
+  colors: {
+    primary: '#10b981',      // Green accent
+    primaryDim: 'rgba(16, 185, 129, 0.1)',
+    freeroam: '#8b5cf6',      // Keep connection color
+    textMain: '#ffffff',        // White text
+    textDim: '#d1d5db',         // Muted text
+    bgPanel: '#1f2937',        // Dark green background
+    borderPanel: '#065f46',     // Green border
+    bgOverlay: 'rgba(31, 41, 55, 0.3)'
+  }
+}
+
+function App() {
+  return (
+    <Vigilo
+      category="development"
+      themeOverrides={customTheme}
+      categories={categories}
+    />
+  )
+}
+```
+
+### Programmatic Control
+
+```tsx
+import { useVigiloConnection } from '@remcostoeten/vigilo/react'
+
+function ConnectionManager() {
+  const { connect, disconnect, focus, getConnectedElements } = useVigiloConnection('development-tasks')
+
+  const handleConnectToProfile = () => {
+    const profileElement = document.querySelector('#user-profile')
+    if (profileElement) {
+      connect('user-profile-task', profileElement)
+    }
+  }
+
+  const handleDisconnect = (taskId: number) => {
+    disconnect(taskId)
+  }
+
+  return (
+    <div>
+      <button onClick={handleConnectToProfile}>
+        Connect to Profile
+      </button>
+      <button onClick={() => handleDisconnect(1)}>
+        Disconnect Task 1
+      </button>
+    </div>
+  )
+}
+```
+
+### TypeScript Support
+
+Full TypeScript definitions are included:
+
+```tsx
+import type {
+  CategoryConfig,
+  VigiloProps,
+  TodoStatus,
+  DisplayMode,
+  VigiloThemeOverrides
+} from '@remcostoeten/vigilo/react'
+
+const categories: CategoryConfig[] = [
+  {
+    id: 'api',
+    displayName: 'API Development',
+    items: [
+      {
+        text: 'Implement authentication endpoint',
+        status: 'done' as TodoStatus,
+        action: '/auth/login'
+      }
+    ]
+  }
+]
+```
+
+## Best Practices
+
+### 1. Use Unique Instance IDs
+```tsx
+// Good: Unique identifiers prevent conflicts
+<Vigilo category="api" instanceId="user-service" />
+<Vigilo category="web" instanceId="frontend-ui" />
+
+// Avoid: Same instanceId for different contexts
+<Vigilo category="tasks" instanceId="main" />
+<Vigilo category="tasks" instanceId="main" /> // This will conflict
+```
+
+### 2. Structure Categories Logically
+```tsx
+const categories = [
+  {
+    id: 'user-management',
+    displayName: 'User Management',
+    items: [
+      { text: 'Create user', status: 'done' },
+      { text: 'Edit profile', status: 'todo' },
+      { text: 'Delete account', status: 'blocked' }
+    ]
+  },
+  {
+    id: 'system-admin',
+    displayName: 'System Administration',
+    items: [
+      { text: 'Database migration', status: 'working' },
+      { text: 'Security audit', status: 'todo' }
+    ]
+  }
+]
+```
+
+### 3. Handle Loading States
+```tsx
+function App() {
+  const [categories, setCategories] = useState<CategoryConfig[] | null>(null)
+
+  if (!categories) {
+    return <div>Loading tasks...</div>
+  }
+
+  return <Vigilo category="development" categories={categories} />
+}
+```

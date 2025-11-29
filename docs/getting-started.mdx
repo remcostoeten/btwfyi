@@ -1,0 +1,100 @@
+---
+title: Getting Started
+description: Learn how to install and use Vigilo in your projects
+---
+
+# Getting Started with Vigilo
+
+Vigilo is a lightweight task awareness overlay that helps you track development tasks across different projects and contexts.
+
+## Installation
+
+### Package Manager
+
+Choose your preferred package manager:
+
+```bash
+# npm
+npm install @remcostoeten/vigilo
+
+# yarn
+yarn add @remcostoeten/vigilo
+
+# bun
+bun add @remcostoeten/vigilo
+```
+
+## Quick Setup
+
+### React Integration
+
+```tsx
+import { Vigilo } from '@remcostoeten/vigilo/react'
+
+function App() {
+  return (
+    <div>
+      <Vigilo category="backend" instanceId="main-backend" />
+      <Vigilo category="frontend" instanceId="main-frontend" />
+    </div>
+  )
+}
+```
+
+### Vue Integration
+
+```vue
+<template>
+  <div>
+    <Vigilo category="backend" instance-key="main-backend" />
+    <Vigilo category="frontend" instance-key="main-frontend" />
+  </div>
+</template>
+
+<script setup>
+import { Vigilo } from '@remcostoeten/vigilo/vue'
+</script>
+```
+
+## Configuration
+
+### Categories
+
+Organize your tasks by creating categories:
+
+```tsx
+const categories = [
+  {
+    id: 'backend',
+    displayName: 'Backend Tasks',
+    items: [
+      { text: 'Fix user authentication bug', status: 'working' },
+      { text: 'Add API rate limiting', status: 'todo' }
+    ]
+  },
+  {
+    id: 'frontend',
+    displayName: 'Frontend Tasks',
+    items: [
+      { text: 'Implement new dashboard', status: 'done' },
+      { text: 'Add dark mode support', status: 'todo' }
+    ]
+  }
+]
+```
+
+### Keyboard Shortcuts
+
+- **Alt+K**: Open command palette
+- **'s'**: Open settings menu (individual per instance)
+- **Arrow Keys**: Navigate between items
+- **Enter**: Select/complete task
+- **Backspace**: Go back from task selection
+- **Escape**: Close modals
+
+## Next Steps
+
+- [React Integration](/react-integration) - Detailed React setup guide
+- [Vue Integration](/vue-integration) - Detailed Vue setup guide
+- [Configuration Options](/configuration) - Advanced customization options
+- [API Reference](/api) - Complete API documentation
