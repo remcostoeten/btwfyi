@@ -1,0 +1,10 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+/* Vigilo target hover effect */
+.vigilo-target-hover {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  transition: outline 0.15s ease;
+}

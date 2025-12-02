@@ -1,0 +1,218 @@
+---
+title: Theming
+description: Customize Vigilo appearance
+---
+
+Vigilo supports theme customization via `themeOverrides` and `stylesOverrides` props. Values can be Tailwind utility classes, CSS variables, hex, or rgb(a) colors.
+
+## Theme Structure
+
+```typescript
+type Theme = {
+  colors: {
+    primary: string      // Connection lines, active states
+    freeroam: string     // Freeroam connection points
+    textMain: string     // Primary text color
+    textMuted: string    // Secondary text color
+    bgPanel: string      // Panel background
+    borderPanel: string  // Panel border
+  }
+  layout: {
+    panel: string        // Panel container classes
+    item: string         // Task item classes
+    header: string       // Header classes
+    badge: string        // Action badge classes
+  }
+  z: {
+    panel: number        // Panel z-index
+    lines: number        // Connection lines z-index
+  }
+}
+```
+
+## Default Theme
+
+```typescript
+const baseTheme = {
+  colors: {
+    primary: '#3b82f6',
+    freeroam: '#f97316',
+    textMain: 'text-zinc-50',
+    textMuted: 'text-zinc-400',
+    bgPanel: 'bg-zinc-950/90',
+    borderPanel: 'border-zinc-800'
+  },
+  layout: {
+    panel: 'fixed rounded-2xl border shadow-2xl backdrop-blur-md',
+    item: 'flex items-center gap-2 px-3 py-2 rounded-lg transition-colors',
+    header: 'flex items-center justify-between px-4 py-3 border-b',
+    badge: 'text-2xs px-1.5 py-0.5 rounded-md font-medium'
+  },
+  z: {
+    panel: 9999,
+    lines: 9998
+  }
+}
+```
+
+## Overriding Theme
+
+```tsx
+<Vigilo
+  category="dev"
+  categories={categories}
+  themeOverrides={{
+    colors: {
+      primary: 'var(--brand-blue)',
+      bgPanel: 'bg-slate-900/80'
+    }
+  }}
+/>
+```
+
+## Color Mode Support
+
+Provide mode-specific overrides for light and dark themes:
+
+```tsx
+<Vigilo
+  category="dev"
+  categories={categories}
+  colorMode="dark"
+  themeOverrides={{
+    colors: {
+      primary: '#3b82f6'
+    },
+    modes: {
+      light: {
+        colors: {
+          bgPanel: 'bg-white',
+          textMain: 'text-zinc-900',
+          borderPanel: 'border-zinc-200'
+        }
+      },
+      dark: {
+        colors: {
+          bgPanel: 'bg-zinc-950/90',
+          textMain: 'text-zinc-50',
+          borderPanel: 'border-zinc-800'
+        }
+      }
+    }
+  }}
+/>
+```
+
+The `colorMode` prop determines which mode overrides to apply.
+
+## Style Overrides
+
+Override computed styles without rebuilding the component:
+
+```tsx
+<Vigilo
+  category="dev"
+  categories={categories}
+  stylesOverrides={{
+    panel: 'fixed right-4 top-4 rounded-2xl border border-white/10 bg-slate-900/80',
+    item: 'flex items-center gap-3 px-4 py-3',
+    connectorDot: {
+      fill: '#10b981',
+      r: 5
+    },
+    freeroamDot: {
+      fill: '#f59e0b',
+      stroke: '#f59e0b',
+      r: 4
+    }
+  }}
+/>
+```
+
+### Computed Styles
+
+Styles are computed from the merged theme:
+
+```typescript
+const styles = {
+  panel: `${theme.layout.panel} ${theme.colors.textMain} ${theme.colors.bgPanel} ${theme.colors.borderPanel}`,
+  item: `${theme.layout.item} hover:bg-white/5`,
+  header: `${theme.layout.header} ${theme.colors.borderPanel}`,
+  badge: `${theme.layout.badge} bg-blue-900/50 text-blue-200`,
+  connectorDot: {
+    fill: theme.colors.primary,
+    r: 4
+  },
+  freeroamDot: {
+    fill: theme.colors.freeroam,
+    stroke: theme.colors.freeroam,
+    strokeWidth: 1.5,
+    r: 3.5,
+    opacity: 0.9
+  }
+}
+```
+
+## Theme Utilities
+
+### mergeTheme
+
+```typescript
+import { mergeTheme } from '@remcostoeten/vigilo-react'
+
+const theme = mergeTheme(
+  { colors: { primary: '#ff0000' } },
+  'dark'  // Apply dark mode overrides
+)
+```
+
+### mergeStyles
+
+```typescript
+import { mergeStyles } from '@remcostoeten/vigilo-react'
+
+const styles = mergeStyles(
+  theme,
+  { panel: 'custom-panel-class' }
+)
+```
+
+## CSS Variables
+
+You can use CSS variables for dynamic theming:
+
+```css
+:root {
+  --vigilo-primary: #3b82f6;
+  --vigilo-bg: rgba(24, 24, 27, 0.9);
+}
+
+[data-theme="light"] {
+  --vigilo-primary: #2563eb;
+  --vigilo-bg: rgba(255, 255, 255, 0.9);
+}
+```
+
+```tsx
+<Vigilo
+  category="dev"
+  categories={categories}
+  themeOverrides={{
+    colors: {
+      primary: 'var(--vigilo-primary)',
+      bgPanel: 'var(--vigilo-bg)'
+    }
+  }}
+/>
+```
+
+## Target Hover Style
+
+When selecting a connection target, hovered elements receive the `vigilo-target-hover` class. Style it in your CSS:
+
+```css
+.vigilo-target-hover {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+```

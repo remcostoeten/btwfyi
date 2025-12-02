@@ -1,0 +1,193 @@
+---
+title: React Component
+description: Vigilo React component and hooks
+---
+
+## Vigilo Component
+
+```tsx
+import { Vigilo } from '@remcostoeten/vigilo-react'
+import type { CategoryConfig } from '@remcostoeten/vigilo-core'
+
+const categories: CategoryConfig[] = [
+  {
+    id: 'dev',
+    displayName: 'Development',
+    items: [
+      { text: 'Fix auth bug', action: 'fix', priority: 'high' },
+      { text: 'Add profile page', action: 'feat' }
+    ]
+  }
+]
+
+function App() {
+  return <Vigilo category="dev" categories={categories} />
+}
+```
+
+## Props
+
+```typescript
+interface VigiloProps<TCategories extends readonly CategoryConfig[]> {
+  // Required
+  category: TCategories[number]['id']
+  categories: TCategories
+
+  // Optional
+  instanceId?: string
+  enabled?: boolean
+  storage?: VigiloStorage
+  themeOverrides?: ThemeOverrides
+  stylesOverrides?: StylesOverrides
+  colorMode?: 'light' | 'dark'
+}
+```
+
+### category
+
+The ID of the category to display. Must match one of the IDs in `categories`.
+
+### categories
+
+Array of category configurations. Each category has an `id`, optional `displayName`, and array of `items`.
+
+### instanceId
+
+Unique identifier for this overlay instance. Used to namespace storage. Defaults to `category` if not provided.
+
+```tsx
+// Two overlays with separate storage
+<Vigilo category="bugs" categories={categories} instanceId="bugs-panel" />
+<Vigilo category="bugs" categories={categories} instanceId="bugs-sidebar" />
+```
+
+### enabled
+
+Whether the overlay is enabled. Defaults to `true`. Set to `false` to completely disable rendering.
+
+```tsx
+<Vigilo 
+  category="dev" 
+  categories={categories} 
+  enabled={process.env.NODE_ENV === 'development'} 
+/>
+```
+
+### storage
+
+Custom storage adapter. Defaults to localStorage. See [Storage API](/docs/storage-api) for custom adapters.
+
+```tsx
+import { createApiVigiloStorage } from '@vigilo/database'
+
+const storage = createApiVigiloStorage({
+  baseUrl: '/api/vigilo',
+  instanceId: 'dev-tasks'
+})
+
+<Vigilo category="dev" categories={categories} storage={storage} />
+```
+
+## useVigiloInstance Hook
+
+Access Vigilo state and store programmatically:
+
+```tsx
+import { useVigiloInstance } from '@remcostoeten/vigilo-react'
+
+function VigiloControls() {
+  const { state, store } = useVigiloInstance({
+    category: 'dev',
+    instanceId: 'dev-overlay'
+  })
+
+  return (
+    <div>
+      <p>Position: {state.position.x}, {state.position.y}</p>
+      <p>Connections: {state.connections.length}</p>
+      <p>Mode: {state.displayMode}</p>
+      
+      <button onClick={() => store.setHidden(!state.isHidden)}>
+        {state.isHidden ? 'Show' : 'Hide'}
+      </button>
+      
+      <button onClick={() => store.setDisplayMode('compact')}>
+        Compact Mode
+      </button>
+      
+      <button onClick={() => store.resetStatuses()}>
+        Reset Statuses
+      </button>
+    </div>
+  )
+}
+```
+
+### Options
+
+```typescript
+interface UseVigiloInstanceOptions {
+  category: string
+  instanceId?: string
+  storage?: VigiloStorage
+}
+```
+
+### Return Value
+
+```typescript
+interface UseVigiloInstanceReturn {
+  state: VigiloState
+  store: VigiloStore
+}
+```
+
+## Overlay Features
+
+### Display Modes
+
+- **Full**: Shows task text, action badges, status indicators, and all controls
+- **Compact**: Condensed view with essential info
+- **Minimal**: Small dot that expands on hover
+
+Toggle via settings panel or programmatically:
+
+```typescript
+store.setDisplayMode('compact')
+```
+
+### Task Statuses
+
+Each task can be marked as `todo`, `working`, or `done`. Click the status indicator to cycle through states.
+
+```typescript
+store.setStatus(0, 'working')  // Mark first task as working
+store.setStatus(0, 'done')     // Mark as done
+store.resetStatuses()          // Clear all statuses
+```
+
+### Settings Panel
+
+Press `s` or click the gear icon to open settings:
+
+- Display mode selection
+- Line visibility toggle
+- Badge visibility toggle
+- Line color picker
+- Line opacity slider
+- Component opacity slider
+- Hide overlay button
+
+### Undo
+
+After hiding the overlay or changing display mode, an undo option appears briefly. The undo window is configurable via `UNDO_WINDOW_MS` (default: 5000ms).
+
+## Rendering
+
+Vigilo renders via React Portal to `document.body`. This ensures it appears above all other content regardless of z-index stacking contexts in your app.
+
+The overlay consists of:
+
+1. **Panel**: Draggable container with header and task list
+2. **SVG Layer**: Connection lines rendered in a full-viewport SVG
+3. **Connection Points**: Interactive endpoints for each connection

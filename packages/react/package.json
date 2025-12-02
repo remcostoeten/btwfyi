@@ -26,13 +26,17 @@
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
+  "peerDependenciesMeta": {
+    "react": { "optional": false },
+    "react-dom": { "optional": false }
+  },
   "dependencies": {
     "@remcostoeten/vigilo-core": "file:../core"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
-    "@types/react": "^18.3.27",
-    "@types/react-dom": "^18.3.7",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },

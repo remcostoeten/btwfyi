@@ -1,5 +1,5 @@
-import { useMemo, useRef, useEffect } from 'react'
-import { createVigiloStore, createStorageKeys, type VigiloStore, type Connection } from '@remcostoeten/vigilo-core'
+import { useRef, useEffect } from 'react'
+import { createVigiloStore, type VigiloStore, type Connection } from '@remcostoeten/vigilo-core'
 import { generateSelector, getElementLabel } from './dom'
 
 export interface UseVigiloInstanceOptions {
@@ -72,16 +72,15 @@ export function useVigiloInstance({
   instanceId,
   lineColor,
 }: UseVigiloInstanceOptions): UseVigiloInstanceReturn {
-  const keys = useMemo(() => createStorageKeys(instanceId), [instanceId])
   const storeRef = useRef<VigiloStore | null>(null)
 
   useEffect(() => {
-    const store = createVigiloStore(keys, lineColor ? { lineColor } : undefined)
+    const store = createVigiloStore(instanceId, lineColor ? { overrides: { lineColor } } : undefined)
     storeRef.current = store
     return () => {
       storeRef.current = null
     }
-  }, [keys, lineColor])
+  }, [instanceId, lineColor])
 
   const addConnection = (
     todoIndex: number,

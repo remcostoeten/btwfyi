@@ -1,0 +1,144 @@
+---
+title: Command Palette
+description: Global search and management across all Vigilo overlays
+---
+
+The command palette provides global access to all tasks across every mounted Vigilo overlay.
+
+## Opening the Palette
+
+- **Keyboard**: `Alt + K` (configurable)
+- **Typed Sequence**: Type `vigilo` anywhere on the page
+
+## Usage
+
+```tsx
+import { Vigilo, VigiloCommandPalette } from '@remcostoeten/vigilo-react'
+
+function App() {
+  return (
+    <>
+      <VigiloCommandPalette />
+      <Vigilo category="dev" categories={devCategories} />
+      <Vigilo category="design" categories={designCategories} />
+    </>
+  )
+}
+```
+
+The palette is automatically included when you render any `Vigilo` component. You only need to render `VigiloCommandPalette` explicitly if you want to customize its props.
+
+## Props
+
+```typescript
+interface VigiloCommandPaletteProps {
+  shortcutKey?: string | null    // Default: 'k'
+  shortcutModifier?: 'alt' | 'ctrl' | 'meta' | 'shift'  // Default: 'alt'
+  disableShortcut?: boolean      // Default: false
+}
+```
+
+### Custom Shortcut
+
+```tsx
+// Use Ctrl+J instead of Alt+K
+<VigiloCommandPalette shortcutKey="j" shortcutModifier="ctrl" />
+
+// Disable keyboard shortcut entirely (only typed sequence works)
+<VigiloCommandPalette disableShortcut />
+```
+
+## Search Mode
+
+When opened normally, the palette shows all tasks across all overlays. Type to filter by:
+
+- Task text
+- Task status
+- Instance label
+- Category ID
+
+Select a task to focus it in its overlay.
+
+## Management Mode
+
+Type `vigilo` in the search box to enter management mode. This shows all overlay instances with controls:
+
+- **Focus overlay**: Scroll to and highlight the overlay
+- **Show/Hide**: Toggle overlay visibility
+- **Clear connections**: Remove all connections from the overlay
+- **Reset statuses**: Set all tasks back to `todo`
+
+## Keyboard Navigation
+
+| Key | Action |
+|-----|--------|
+| `Arrow Down` | Select next task |
+| `Arrow Up` | Select previous task |
+| `Enter` | Focus selected task |
+| `Backspace` | Deselect / go back |
+| `Escape` | Close palette |
+
+## Registry
+
+The palette uses an internal registry to track all mounted Vigilo instances. Each instance registers itself on mount and unregisters on unmount.
+
+### Registry Types
+
+```typescript
+type PaletteTaskSnapshot = {
+  id: string
+  instanceKey: string
+  index: number
+  text: string
+  status: TodoStatus
+  hasConnection: boolean
+  focusTask: () => void
+  clearConnection?: () => void
+}
+
+type PaletteInstanceSnapshot = {
+  instanceKey: string
+  categoryId: string
+  label: string
+  hidden: boolean
+  totalTasks: number
+  connectedCount: number
+  tasks: PaletteTaskSnapshot[]
+  actions: {
+    focus: () => void
+    show: () => void
+    hide: () => void
+    resetConnections: () => void
+    resetStatuses: () => void
+  }
+}
+```
+
+### Registry Functions
+
+```typescript
+import { 
+  getPaletteInstances, 
+  subscribePaletteInstances 
+} from '@remcostoeten/vigilo-react'
+
+// Get current snapshot
+const instances = getPaletteInstances()
+
+// Subscribe to changes
+const unsubscribe = subscribePaletteInstances((instances) => {
+  console.log('Instances updated:', instances)
+})
+```
+
+## Accessibility
+
+The palette includes:
+
+- `role="dialog"` with `aria-modal="true"`
+- `aria-label` on the dialog and input
+- `role="listbox"` for the task list
+- `aria-selected` on focused items
+- Keyboard navigation support
+- Focus management (auto-focus input on open)
+- Background interaction lock (`document.body.inert`)

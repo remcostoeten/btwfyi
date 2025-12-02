@@ -1,0 +1,46 @@
+---
+title: Interactive Demo
+description: Try Vigilo in your browser
+---
+
+## Live Demo
+
+This is a working Vigilo overlay. Try:
+
+1. **Connect a task**: Click the dot next to a task, then click any element below
+2. **Drag the panel**: Click and drag the header to reposition
+3. **Change status**: Click the status indicator on a task to cycle through states
+4. **Open settings**: Press `s` or click the gear icon
+5. **Command palette**: Press `Alt + K` to search all tasks
+
+<VigiloDemo />
+
+## Configurator
+
+Adjust settings and see the generated code update in real-time.
+
+<VigiloConfigurator />
+
+## What You Can Configure
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `category` | `string` | ID of the category to display |
+| `categories` | `CategoryConfig[]` | Array of category configurations |
+| `instanceId` | `string` | Unique ID for storage namespacing |
+| `themeOverrides` | `object` | Custom colors, layout, z-index |
+| `stylesOverrides` | `object` | Custom CSS classes |
+| `colorMode` | `'light' \| 'dark'` | Which theme mode to apply |
+| `storage` | `VigiloStorage` | Custom storage adapter |
+| `enabled` | `boolean` | Enable/disable the overlay |
+
+## Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `Alt + K` | Open command palette |
+| `s` | Open settings |
+| `?` | Show keyboard help |
+| `/` | Focus search |
+| `Escape` | Close modal / cancel |
+| `Shift` (while connecting) | Freeroam mode |

@@ -1,0 +1,22 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "index",
+    "demo",
+    "---Getting Started---",
+    "installation",
+    "quick-start",
+    "---Core Concepts---",
+    "core-api",
+    "state-management",
+    "connections",
+    "---React---",
+    "react-component",
+    "command-palette",
+    "theming",
+    "---Storage---",
+    "storage-api",
+    "database-persistence",
+    "api-routes"
+  ]
+}

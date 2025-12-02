@@ -1,0 +1,199 @@
+---
+title: Storage API
+description: Pluggable persistence for Vigilo state
+---
+
+Vigilo uses a storage adapter pattern for persistence. The default adapter uses localStorage, but you can implement custom adapters for any storage backend.
+
+## VigiloStorage Interface
+
+```typescript
+interface VigiloStorage {
+  loadState(): Partial<VigiloState>
+  savePosition(position: Pos): void
+  saveConnections(connections: Connection[]): void
+  saveDisplayMode(mode: DisplayMode): void
+  saveHidden(isHidden: boolean): void
+  saveShowLines(showLines: boolean): void
+  saveShowBadges(showBadges: boolean): void
+  saveLineColor(color: string): void
+  saveLineOpacity(opacity: number): void
+  saveComponentOpacity(opacity: number): void
+  saveStatuses(statuses: Map<number, TodoStatus>): void
+}
+```
+
+All save methods can be synchronous or return a Promise.
+
+## localStorage Adapter
+
+The default adapter, included in `@remcostoeten/vigilo-core`:
+
+```typescript
+import { createLocalStorageVigiloStorage } from '@remcostoeten/vigilo-core'
+
+const storage = createLocalStorageVigiloStorage('my-instance')
+```
+
+### Storage Keys
+
+Data is stored with namespaced keys:
+
+| Key | Data |
+|-----|------|
+| `vigilo-state-pos-{key}` | `{ x: number, y: number }` |
+| `vigilo-state-con-{key}` | `Connection[]` |
+| `vigilo-state-mode-{key}` | `DisplayMode` |
+| `vigilo-state-hidden-{key}` | `boolean` |
+| `vigilo-state-lines-{key}` | `boolean` |
+| `vigilo-state-badges-{key}` | `boolean` |
+| `vigilo-state-lineColor-{key}` | `string` |
+| `vigilo-state-lineOpacity-{key}` | `number` |
+| `vigilo-state-componentOpacity-{key}` | `number` |
+| `vigilo-state-statuses-{key}` | `Record<string, TodoStatus>` |
+
+### Error Handling
+
+The localStorage adapter catches and logs errors silently. If localStorage is unavailable or full, the app continues with in-memory state.
+
+## API Storage Adapter
+
+For database persistence, use the adapter from `@vigilo/database`:
+
+```typescript
+import { createApiVigiloStorage } from '@vigilo/database'
+
+const storage = createApiVigiloStorage({
+  baseUrl: 'https://your-app.com/api/vigilo',
+  instanceId: 'user-tasks',
+  token: 'auth-token',
+  headers: { 'X-Custom-Header': 'value' },
+  timeout: 5000
+})
+```
+
+See [Database Persistence](/docs/database-persistence) for full setup.
+
+## Custom Adapter
+
+Implement the `VigiloStorage` interface for any backend:
+
+```typescript
+import type { VigiloStorage, VigiloState } from '@remcostoeten/vigilo-core'
+
+function createCustomStorage(key: string): VigiloStorage {
+  return {
+    loadState(): Partial<VigiloState> {
+      // Load from your backend
+      const data = myBackend.get(key)
+      return data || {}
+    },
+
+    savePosition(position) {
+      myBackend.set(`${key}:position`, position)
+    },
+
+    saveConnections(connections) {
+      myBackend.set(`${key}:connections`, connections)
+    },
+
+    saveDisplayMode(mode) {
+      myBackend.set(`${key}:displayMode`, mode)
+    },
+
+    saveHidden(isHidden) {
+      myBackend.set(`${key}:hidden`, isHidden)
+    },
+
+    saveShowLines(showLines) {
+      myBackend.set(`${key}:showLines`, showLines)
+    },
+
+    saveShowBadges(showBadges) {
+      myBackend.set(`${key}:showBadges`, showBadges)
+    },
+
+    saveLineColor(color) {
+      myBackend.set(`${key}:lineColor`, color)
+    },
+
+    saveLineOpacity(opacity) {
+      myBackend.set(`${key}:lineOpacity`, opacity)
+    },
+
+    saveComponentOpacity(opacity) {
+      myBackend.set(`${key}:componentOpacity`, opacity)
+    },
+
+    saveStatuses(statuses) {
+      // Convert Map to object for serialization
+      const obj: Record<string, TodoStatus> = {}
+      for (const [idx, status] of statuses) {
+        obj[idx.toString()] = status
+      }
+      myBackend.set(`${key}:statuses`, obj)
+    }
+  }
+}
+```
+
+## Using Custom Storage
+
+Pass the adapter to the Vigilo component:
+
+```tsx
+const storage = createCustomStorage('my-tasks')
+
+<Vigilo 
+  category="dev" 
+  categories={categories} 
+  storage={storage} 
+/>
+```
+
+Or to the store directly:
+
+```typescript
+const store = createVigiloStore('my-tasks', { storage })
+```
+
+## Noop Storage
+
+For testing or when persistence is not needed:
+
+```typescript
+import { noopStorage } from '@remcostoeten/vigilo-core'
+
+<Vigilo 
+  category="dev" 
+  categories={categories} 
+  storage={noopStorage} 
+/>
+```
+
+The noop adapter implements all methods as no-ops and returns empty state from `loadState`.
+
+## Async Storage
+
+Save methods can return Promises. The store does not await them, so saves are fire-and-forget:
+
+```typescript
+async savePosition(position) {
+  await fetch('/api/position', {
+    method: 'POST',
+    body: JSON.stringify(position)
+  })
+}
+```
+
+For `loadState`, the store expects synchronous return. If you need async loading, load data before creating the store:
+
+```typescript
+const initialState = await fetchState()
+
+const storage = createCustomStorage('key')
+const store = createVigiloStore('key', {
+  storage,
+  overrides: initialState
+})
+```

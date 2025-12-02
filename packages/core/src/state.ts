@@ -1,4 +1,4 @@
-import type { StorageKeys, VigiloState, VigiloStorage } from './types'
+import type { VigiloState, VigiloStorage } from './types'
 
 const DEFAULT_POSITION = { x: 20, y: 20 }
 const DEFAULT_LINE_COLOR = '#3b82f6'

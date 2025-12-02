@@ -1,0 +1,173 @@
+---
+title: State Management
+description: How Vigilo manages and persists state
+---
+
+## State Flow
+
+1. **Initialization**: `createVigiloStore` creates a store with an optional storage adapter
+2. **Hydration**: `hydrateState` loads persisted data and merges with defaults
+3. **Mutations**: Store methods update state and trigger persistence
+4. **Subscriptions**: Listeners receive updates on every state change
+
+## Store Creation
+
+```typescript
+import { createVigiloStore, createLocalStorageVigiloStorage } from '@remcostoeten/vigilo-core'
+
+// Default: uses localStorage with instanceKey as namespace
+const store = createVigiloStore('my-instance')
+
+// Custom storage adapter
+const customStorage = createLocalStorageVigiloStorage('custom-key')
+const store = createVigiloStore('my-instance', { storage: customStorage })
+
+// With initial overrides
+const store = createVigiloStore('my-instance', {
+  overrides: {
+    displayMode: 'compact',
+    lineColor: '#ff0000'
+  }
+})
+```
+
+## Subscription Pattern
+
+```typescript
+const store = createVigiloStore('tasks')
+
+// Subscribe returns an unsubscribe function
+const unsubscribe = store.subscribe(() => {
+  const state = store.getState()
+  console.log('Position:', state.position)
+  console.log('Connections:', state.connections.length)
+})
+
+// Later: cleanup
+unsubscribe()
+```
+
+## State Properties
+
+### Position
+
+```typescript
+store.setPosition({ x: 100, y: 200 })
+
+// Skip persistence (useful during drag)
+store.setPosition({ x: 100, y: 200 }, { persist: false })
+```
+
+### Display Mode
+
+```typescript
+store.setDisplayMode('full')    // All details visible
+store.setDisplayMode('compact') // Condensed view
+store.setDisplayMode('minimal') // Dot that expands on hover
+```
+
+### Visibility
+
+```typescript
+store.setHidden(true)  // Hide overlay
+store.setHidden(false) // Show overlay
+```
+
+### Visual Settings
+
+```typescript
+store.setShowLines(true)       // Show connection lines
+store.setShowBadges(true)      // Show action badges
+store.setLineColor('#3b82f6')  // Connection line color
+store.setLineOpacity(0.6)      // Line opacity (0-1)
+store.setComponentOpacity(1)   // Panel opacity (0.1-1)
+```
+
+### Task Statuses
+
+```typescript
+// Set individual status
+store.setStatus(0, 'working')
+store.setStatus(1, 'done')
+
+// Replace all statuses
+store.setStatuses(new Map([
+  [0, 'done'],
+  [1, 'working'],
+  [2, 'todo']
+]))
+
+// Clear all statuses
+store.resetStatuses()
+```
+
+### Connections
+
+```typescript
+// DOM connection
+store.setConnections([
+  { todoIndex: 0, targetSelector: '#submit-btn', targetLabel: 'Submit' }
+])
+
+// Freeroam connection
+store.setConnections([
+  { todoIndex: 1, targetPosition: { x: 500, y: 300 } }
+])
+
+// Mixed
+store.setConnections([
+  { todoIndex: 0, targetSelector: '#header' },
+  { todoIndex: 1, targetPosition: { x: 200, y: 400 } }
+])
+```
+
+## Storage Keys
+
+When using localStorage, keys are namespaced with the instance key:
+
+| Key Pattern | Data |
+|-------------|------|
+| `vigilo-state-pos-{key}` | Panel position |
+| `vigilo-state-con-{key}` | Connections array |
+| `vigilo-state-mode-{key}` | Display mode |
+| `vigilo-state-hidden-{key}` | Hidden state |
+| `vigilo-state-lines-{key}` | Show lines flag |
+| `vigilo-state-badges-{key}` | Show badges flag |
+| `vigilo-state-lineColor-{key}` | Line color |
+| `vigilo-state-lineOpacity-{key}` | Line opacity |
+| `vigilo-state-componentOpacity-{key}` | Component opacity |
+| `vigilo-state-statuses-{key}` | Task statuses map |
+
+## React Integration
+
+The React component handles store creation and subscription internally:
+
+```tsx
+import { Vigilo } from '@remcostoeten/vigilo-react'
+
+// Store is created with instanceId (or category) as the key
+<Vigilo 
+  category="dev" 
+  categories={categories} 
+  instanceId="dev-overlay"  // Optional: defaults to category
+/>
+```
+
+For programmatic access, use the `useVigiloInstance` hook:
+
+```tsx
+import { useVigiloInstance } from '@remcostoeten/vigilo-react'
+
+function MyComponent() {
+  const { state, store } = useVigiloInstance({
+    category: 'dev',
+    instanceId: 'dev-overlay'
+  })
+
+  return (
+    <button onClick={() => store.setHidden(!state.isHidden)}>
+      Toggle Overlay
+    </button>
+  )
+}
+```

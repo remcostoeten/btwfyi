@@ -1,0 +1,197 @@
+---
+title: Core API
+description: Framework-agnostic state and storage utilities
+---
+
+The `@remcostoeten/vigilo-core` package provides the foundation for Vigilo. It contains no framework dependencies and can be used standalone or wrapped by framework-specific packages.
+
+## Types
+
+### Pos
+
+```typescript
+type Pos = {
+  x: number
+  y: number
+}
+```
+
+2D coordinates for panel position and freeroam connections.
+
+### TodoStatus
+
+```typescript
+type TodoStatus = 'todo' | 'working' | 'done'
+```
+
+### TodoItem
+
+```typescript
+type TodoItem = {
+  text: string
+  action?: string
+  info?: string
+  description?: string
+  notes?: string
+  priority?: 'low' | 'medium' | 'high'
+  tags?: string[]
+  createdAt?: string
+  updatedAt?: string
+}
+```
+
+### CategoryConfig
+
+```typescript
+type CategoryConfig<ID extends string = string> = {
+  id: ID
+  displayName?: string
+  items: TodoItem[]
+}
+```
+
+### Connection
+
+```typescript
+type Connection = {
+  todoIndex: number
+  targetSelector?: string   // CSS selector for DOM connection
+  targetLabel?: string      // Display label extracted from element
+  targetPosition?: Pos      // x/y for freeroam connection
+}
+```
+
+A connection links a task (by index) to either a DOM element (via selector) or an arbitrary screen position.
+
+### DisplayMode
+
+```typescript
+type DisplayMode = 'full' | 'compact' | 'minimal'
+```
+
+- `full` - Shows all task details
+- `compact` - Condensed view
+- `minimal` - Dot that expands on hover
+
+### VigiloState
+
+```typescript
+type VigiloState = {
+  position: Pos
+  connections: Connection[]
+  displayMode: DisplayMode
+  isHidden: boolean
+  showLines: boolean
+  showBadges: boolean
+  lineColor: string
+  lineOpacity: number
+  componentOpacity: number
+  statuses: Map<number, TodoStatus>
+}
+```
+
+Complete state of a Vigilo instance.
+
+## Store
+
+### createVigiloStore
+
+```typescript
+function createVigiloStore(
+  instanceKey: string,
+  options?: {
+    storage?: VigiloStorage
+    overrides?: Partial<VigiloState>
+  }
+): VigiloStore
+```
+
+Creates a store that manages state and persists changes.
+
+```typescript
+const store = createVigiloStore('my-tasks')
+
+// Read state
+const state = store.getState()
+
+// Subscribe to changes
+const unsubscribe = store.subscribe(() => {
+  console.log('State changed:', store.getState())
+})
+
+// Mutate state
+store.setPosition({ x: 100, y: 200 })
+store.setDisplayMode('compact')
+store.setStatus(0, 'working')
+store.setConnections([{ todoIndex: 0, targetSelector: '#submit-btn' }])
+```
+
+### VigiloStore Methods
+
+| Method | Signature |
+|--------|-----------|
+| `getState` | `() => VigiloState` |
+| `subscribe` | `(listener: () => void) => () => void` |
+| `setPosition` | `(pos: Pos, options?: { persist?: boolean }) => void` |
+| `setConnections` | `(connections: Connection[]) => void` |
+| `setDisplayMode` | `(mode: DisplayMode) => void` |
+| `setHidden` | `(isHidden: boolean) => void` |
+| `setShowLines` | `(show: boolean) => void` |
+| `setShowBadges` | `(show: boolean) => void` |
+| `setLineColor` | `(color: string) => void` |
+| `setLineOpacity` | `(opacity: number) => void` |
+| `setComponentOpacity` | `(opacity: number) => void` |
+| `setStatuses` | `(statuses: Map<number, TodoStatus>) => void` |
+| `setStatus` | `(index: number, status: TodoStatus) => void` |
+| `resetStatuses` | `() => void` |
+
+## State Utilities
+
+### createDefaultState
+
+```typescript
+function createDefaultState(overrides?: Partial<VigiloState>): VigiloState
+```
+
+Returns a fresh state object with defaults:
+
+```typescript
+{
+  position: { x: 20, y: 20 },
+  connections: [],
+  displayMode: 'full',
+  isHidden: false,
+  showLines: true,
+  showBadges: true,
+  lineColor: '#3b82f6',
+  lineOpacity: 0.6,
+  componentOpacity: 1,
+  statuses: new Map()
+}
+```
+
+### hydrateState
+
+```typescript
+function hydrateState(
+  storage: VigiloStorage,
+  overrides?: Partial<VigiloState>
+): VigiloState
+```
+
+Loads persisted state from storage and merges with defaults and overrides.
+
+## Connection Utilities
+
+### calculateBezier
+
+```typescript
+function calculateBezier(start: Pos, end: Pos): string
+```
+
+Returns an SVG path string for a cubic bezier curve connecting two points. Used internally to draw connection lines.
+
+```typescript
+const path = calculateBezier({ x: 100, y: 100 }, { x: 300, y: 200 })
+// "M 100 100 C 175 100, 225 200, 300 200"
+```

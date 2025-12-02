@@ -1,0 +1,114 @@
+---
+title: Quick Start
+description: Get Vigilo running in minutes
+---
+
+## Basic Setup
+
+```tsx
+import { Vigilo } from '@remcostoeten/vigilo-react'
+import type { CategoryConfig } from '@remcostoeten/vigilo-core'
+
+const categories: CategoryConfig[] = [
+  {
+    id: 'tasks',
+    displayName: 'My Tasks',
+    items: [
+      { text: 'Fix login bug', action: 'fix', priority: 'high' },
+      { text: 'Add dark mode', action: 'feat', priority: 'medium' },
+      { text: 'Write tests', action: 'test', priority: 'low' }
+    ]
+  }
+]
+
+function App() {
+  return (
+    <div>
+      <Vigilo category="tasks" categories={categories} />
+      {/* Your app content */}
+    </div>
+  )
+}
+```
+
+The overlay appears in the top-left corner. Drag it anywhere. Click the connector dot next to a task, then click any element on the page to link them.
+
+## Multiple Categories
+
+```tsx
+const categories: CategoryConfig[] = [
+  {
+    id: 'bugs',
+    displayName: 'Bugs',
+    items: [
+      { text: 'Auth redirect fails', action: 'fix' },
+      { text: 'Form validation broken', action: 'fix' }
+    ]
+  },
+  {
+    id: 'features',
+    displayName: 'Features',
+    items: [
+      { text: 'User profiles', action: 'feat' },
+      { text: 'Search functionality', action: 'feat' }
+    ]
+  }
+]
+
+// Render separate overlays for each category
+function App() {
+  return (
+    <>
+      <Vigilo category="bugs" categories={categories} instanceId="bugs-overlay" />
+      <Vigilo category="features" categories={categories} instanceId="features-overlay" />
+    </>
+  )
+}
+```
+
+Use `instanceId` to namespace storage when running multiple overlays.
+
+## TodoItem Properties
+
+```typescript
+type TodoItem = {
+  text: string              // Required: task description
+  action?: string           // Badge label (fix, feat, test, etc.)
+  info?: string             // Short info text
+  description?: string      // Longer description
+  notes?: string            // Additional notes
+  priority?: 'low' | 'medium' | 'high'
+  tags?: string[]
+  createdAt?: string        // ISO 8601 timestamp
+  updatedAt?: string
+}
+```
+
+## Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `Alt + K` | Open command palette |
+| `s` | Open settings panel |
+| `?` | Show keyboard help |
+| `/` | Focus search |
+| `Escape` | Close modals/cancel selection |
+| `Shift` (while connecting) | Enable freeroam mode |
+
+## Command Palette
+
+Type `vigilo` anywhere to enter management mode. From there you can:
+
+- Show/hide overlays
+- Clear all connections
+- Reset task statuses
+- Focus specific overlays
+
+Or search for any task across all mounted overlays.
+
+## Next Steps
+
+- [Core API](/docs/core-api) - Understand the state model
+- [Connections](/docs/connections) - DOM and freeroam connections
+- [Storage API](/docs/storage-api) - Custom persistence
+- [Database Persistence](/docs/database-persistence) - Store in your database

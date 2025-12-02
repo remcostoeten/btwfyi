@@ -1,0 +1,255 @@
+---
+title: API Routes
+description: Server-side handlers for Vigilo database persistence
+---
+
+The `@vigilo/database` package provides pre-built handlers for Next.js API routes and tRPC.
+
+## API Endpoints
+
+All endpoints follow the pattern: `/api/vigilo/[resource]/[instanceKey]`
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/state/[instanceKey]` | Load complete state |
+| POST | `/position/[instanceKey]` | Save panel position |
+| POST | `/connections/[instanceKey]` | Save connections |
+| POST | `/display-mode/[instanceKey]` | Save display mode |
+| POST | `/hidden/[instanceKey]` | Save hidden state |
+| POST | `/show-lines/[instanceKey]` | Save line visibility |
+| POST | `/show-badges/[instanceKey]` | Save badge visibility |
+| POST | `/line-color/[instanceKey]` | Save line color |
+| POST | `/line-opacity/[instanceKey]` | Save line opacity |
+| POST | `/component-opacity/[instanceKey]` | Save component opacity |
+| POST | `/statuses/[instanceKey]` | Save task statuses |
+
+## Next.js App Router
+
+### Prisma
+
+```typescript
+// app/api/vigilo/state/[instanceKey]/route.ts
+import { NextRequest, NextResponse } from 'next/server'
+import { createVigiloApiHandlers, createVigiloPrismaQueries } from '@vigilo/database'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+const queries = createVigiloPrismaQueries(prisma)
+const handlers = createVigiloApiHandlers(queries)
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { instanceKey: string } }
+) {
+  return handlers.handleLoadState(request, { params })
+}
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { instanceKey: string } }
+) {
+  const body = await request.json()
+  const { type } = body
+
+  switch (type) {
+    case 'position':
+      return handlers.handleSavePosition(request, { params })
+    case 'connections':
+      return handlers.handleSaveConnections(request, { params })
+    case 'displayMode':
+      return handlers.handleSaveDisplayMode(request, { params })
+    case 'hidden':
+      return handlers.handleSaveHidden(request, { params })
+    case 'showLines':
+      return handlers.handleSaveShowLines(request, { params })
+    case 'showBadges':
+      return handlers.handleSaveShowBadges(request, { params })
+    case 'lineColor':
+      return handlers.handleSaveLineColor(request, { params })
+    case 'lineOpacity':
+      return handlers.handleSaveLineOpacity(request, { params })
+    case 'componentOpacity':
+      return handlers.handleSaveComponentOpacity(request, { params })
+    case 'statuses':
+      return handlers.handleSaveStatuses(request, { params })
+    default:
+      return NextResponse.json({ error: 'Invalid update type' }, { status: 400 })
+  }
+}
+```
+
+### Drizzle
+
+```typescript
+// app/api/vigilo/state/[instanceKey]/route.ts
+import { createVigiloApiHandlers, createVigiloDrizzleQueries } from '@vigilo/database'
+import { drizzle } from 'drizzle-orm/postgres-js'
+import postgres from 'postgres'
+import * as schema from '@/lib/db/schema'
+
+const client = postgres(process.env.DATABASE_URL!)
+const db = drizzle(client, { schema })
+const queries = createVigiloDrizzleQueries(db)
+const handlers = createVigiloApiHandlers(queries)
+
+// Same GET and POST handlers as above
+```
+
+## Request/Response Formats
+
+### Load State Response
+
+```json
+{
+  "position": { "x": 100, "y": 200 },
+  "connections": [
+    {
+      "todoIndex": 0,
+      "targetSelector": "#submit-btn",
+      "targetLabel": "Submit"
+    }
+  ],
+  "displayMode": "full",
+  "isHidden": false,
+  "showLines": true,
+  "showBadges": true,
+  "lineColor": "#3b82f6",
+  "lineOpacity": 0.5,
+  "componentOpacity": 1.0,
+  "statuses": { "0": "working", "1": "done" }
+}
+```
+
+### Position Request
+
+```json
+{
+  "type": "position",
+  "data": { "x": 100, "y": 200 }
+}
+```
+
+### Connections Request
+
+```json
+{
+  "type": "connections",
+  "data": {
+    "connections": [
+      {
+        "todoIndex": 0,
+        "targetSelector": "#submit-btn",
+        "targetLabel": "Submit"
+      },
+      {
+        "todoIndex": 1,
+        "targetPosition": { "x": 500, "y": 300 }
+      }
+    ]
+  }
+}
+```
+
+### Statuses Request
+
+```json
+{
+  "type": "statuses",
+  "data": {
+    "statuses": {
+      "0": "todo",
+      "1": "working",
+      "2": "done"
+    }
+  }
+}
+```
+
+## tRPC Integration
+
+```typescript
+// server/trpc/router.ts
+import { createVigiloRouter, createVigiloPrismaQueries } from '@vigilo/database'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+const queries = createVigiloPrismaQueries(prisma)
+
+export const vigiloRouter = createVigiloRouter(queries)
+```
+
+### tRPC Procedures
+
+| Procedure | Input | Output |
+|-----------|-------|--------|
+| `getState` | `{ instanceKey: string }` | `VigiloStateResponse` |
+| `savePosition` | `{ instanceKey: string, x: number, y: number }` | `{ success: boolean }` |
+| `saveConnections` | `{ instanceKey: string, connections: Connection[] }` | `{ success: boolean }` |
+| `saveDisplayMode` | `{ instanceKey: string, displayMode: DisplayMode }` | `{ success: boolean }` |
+| `saveHidden` | `{ instanceKey: string, isHidden: boolean }` | `{ success: boolean }` |
+| `saveShowLines` | `{ instanceKey: string, showLines: boolean }` | `{ success: boolean }` |
+| `saveShowBadges` | `{ instanceKey: string, showBadges: boolean }` | `{ success: boolean }` |
+| `saveLineColor` | `{ instanceKey: string, lineColor: string }` | `{ success: boolean }` |
+| `saveLineOpacity` | `{ instanceKey: string, lineOpacity: number }` | `{ success: boolean }` |
+| `saveComponentOpacity` | `{ instanceKey: string, componentOpacity: number }` | `{ success: boolean }` |
+| `saveStatuses` | `{ instanceKey: string, statuses: Record<string, TodoStatus> }` | `{ success: boolean }` |
+
+### Client Usage
+
+```typescript
+import { trpc } from '@/lib/trpc'
+
+const { data } = trpc.vigilo.getState.useQuery({ instanceKey: 'my-app' })
+
+const savePosition = trpc.vigilo.savePosition.useMutation()
+savePosition.mutate({ instanceKey: 'my-app', x: 100, y: 200 })
+```
+
+## Authentication
+
+Add authentication middleware to your routes:
+
+```typescript
+export async function GET(request: NextRequest, { params }) {
+  const authHeader = request.headers.get('authorization')
+  const token = authHeader?.replace('Bearer ', '')
+
+  if (!token || !validateToken(token)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  return handlers.handleLoadState(request, { params })
+}
+```
+
+The API storage adapter sends the token in the `Authorization` header:
+
+```typescript
+const storage = createApiVigiloStorage({
+  baseUrl: '/api/vigilo',
+  instanceId: 'user-tasks',
+  token: 'your-auth-token'
+})
+```
+
+## Query Handler Interface
+
+Both Prisma and Drizzle query helpers implement the same interface:
+
+```typescript
+interface VigiloQueryHandler {
+  loadState(instanceKey: string): Promise<VigiloStateResponse | null>
+  savePosition(instanceKey: string, x: number, y: number): Promise<void>
+  saveConnections(instanceKey: string, connections: Connection[]): Promise<void>
+  saveDisplayMode(instanceKey: string, mode: DisplayMode): Promise<void>
+  saveHidden(instanceKey: string, isHidden: boolean): Promise<void>
+  saveShowLines(instanceKey: string, showLines: boolean): Promise<void>
+  saveShowBadges(instanceKey: string, showBadges: boolean): Promise<void>
+  saveLineColor(instanceKey: string, color: string): Promise<void>
+  saveLineOpacity(instanceKey: string, opacity: number): Promise<void>
+  saveComponentOpacity(instanceKey: string, opacity: number): Promise<void>
+  saveStatuses(instanceKey: string, statuses: Record<string, TodoStatus>): Promise<void>
+}
+```
+
+You can implement this interface for other ORMs or databases.

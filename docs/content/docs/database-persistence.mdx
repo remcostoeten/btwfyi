@@ -1,0 +1,286 @@
+---
+title: Database Persistence
+description: Store Vigilo state in your own database
+---
+
+The `@vigilo/database` package provides everything needed to persist Vigilo state in your database instead of localStorage.
+
+## Overview
+
+1. Generate database schema (Prisma, Drizzle, or raw SQL)
+2. Create API routes using provided handlers
+3. Use the API storage adapter or React provider
+
+## Schema Generation
+
+```bash
+# Prisma
+npx vigilo-db --prisma --out prisma/schema.prisma
+
+# Drizzle
+npx vigilo-db --drizzle --out lib/db/schema.ts
+
+# Raw SQL
+npx vigilo-db --sql --out db/vigilo.sql
+```
+
+## Database Tables
+
+### vigilo_instance
+
+Primary table for instance management:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | string | Primary key |
+| instance_key | string | Unique namespace identifier |
+| user_id | string? | Optional user association |
+| created_at | timestamp | Creation time |
+| updated_at | timestamp | Last update time |
+
+### vigilo_position
+
+Panel position:
+
+| Column | Type |
+|--------|------|
+| id | string |
+| instance_id | string (FK) |
+| x | int |
+| y | int |
+
+### vigilo_connection
+
+Task-to-target connections:
+
+| Column | Type |
+|--------|------|
+| id | string |
+| instance_id | string (FK) |
+| todo_index | int |
+| target_selector | string? |
+| target_label | string? |
+| target_position_x | int? |
+| target_position_y | int? |
+
+### vigilo_settings
+
+Display settings:
+
+| Column | Type | Default |
+|--------|------|---------|
+| display_mode | string | 'full' |
+| is_hidden | boolean | false |
+| show_lines | boolean | true |
+| show_badges | boolean | true |
+| line_color | string | '#3b82f6' |
+| line_opacity | float | 0.5 |
+| component_opacity | float | 1.0 |
+
+### vigilo_status
+
+Task completion statuses:
+
+| Column | Type |
+|--------|------|
+| id | string |
+| instance_id | string (FK) |
+| todo_index | int |
+| status | string ('todo' | 'working' | 'done') |
+
+## Prisma Setup
+
+After generating the schema:
+
+```bash
+npx prisma generate
+npx prisma db push
+```
+
+Create query helpers:
+
+```typescript
+import { createVigiloPrismaQueries } from '@vigilo/database'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+const queries = createVigiloPrismaQueries(prisma)
+```
+
+## Drizzle Setup
+
+After generating the schema:
+
+```bash
+npx drizzle-kit generate
+npx drizzle-kit migrate
+```
+
+Create query helpers:
+
+```typescript
+import { createVigiloDrizzleQueries } from '@vigilo/database'
+import { drizzle } from 'drizzle-orm/postgres-js'
+import postgres from 'postgres'
+import * as schema from './schema'
+
+const client = postgres(process.env.DATABASE_URL!)
+const db = drizzle(client, { schema })
+const queries = createVigiloDrizzleQueries(db)
+```
+
+## API Storage Adapter
+
+```typescript
+import { createApiVigiloStorage } from '@vigilo/database'
+
+const storage = createApiVigiloStorage({
+  baseUrl: '/api/vigilo',
+  instanceId: 'user-tasks',
+  token: 'auth-token',        // Optional
+  headers: {},                 // Optional custom headers
+  timeout: 5000                // Request timeout in ms
+})
+
+<Vigilo category="dev" categories={categories} storage={storage} />
+```
+
+### Config Options
+
+```typescript
+interface ApiStorageConfig {
+  baseUrl: string
+  instanceId: string
+  token?: string
+  headers?: Record<string, string>
+  timeout?: number  // Default: 5000
+}
+```
+
+## React Provider
+
+Wrap your app with `VigiloProvider` for automatic storage handling:
+
+```tsx
+import { VigiloProvider } from '@vigilo/database'
+import { Vigilo } from '@remcostoeten/vigilo-react'
+
+function App() {
+  return (
+    <VigiloProvider
+      baseUrl="/api/vigilo"
+      defaultInstanceId="user-tasks"
+      getAuthToken={() => localStorage.getItem('token')}
+    >
+      <Vigilo category="dev" categories={categories} />
+    </VigiloProvider>
+  )
+}
+```
+
+### Provider Props
+
+```typescript
+interface VigiloProviderConfig {
+  baseUrl: string
+  defaultInstanceId: string
+  token?: string
+  getAuthToken?: () => string | undefined
+  headers?: Record<string, string>
+  timeout?: number
+  optimisticUpdates?: boolean
+}
+```
+
+### useVigiloStorage Hook
+
+Access storage from within the provider:
+
+```tsx
+import { useVigiloStorage } from '@vigilo/database'
+
+function MyComponent() {
+  const { getStorage, isAuthenticated, isLoading } = useVigiloStorage()
+  
+  if (isLoading) return <div>Loading...</div>
+  
+  const storage = getStorage('custom-instance')
+  return <Vigilo storage={storage} category="dev" categories={categories} />
+}
+```
+
+### useVigiloProps Hook
+
+Automatically attach storage to Vigilo props:
+
+```tsx
+import { useVigiloProps } from '@vigilo/database'
+
+function MyComponent() {
+  const props = useVigiloProps({
+    category: 'dev',
+    categories: devCategories
+  })
+  
+  return <Vigilo {...props} />
+}
+```
+
+### withVigiloStorage HOC
+
+Higher-order component for automatic storage:
+
+```tsx
+import { withVigiloStorage } from '@vigilo/database'
+import { Vigilo } from '@remcostoeten/vigilo-react'
+
+const EnhancedVigilo = withVigiloStorage(Vigilo)
+
+// Storage is added automatically
+<EnhancedVigilo category="dev" categories={categories} />
+```
+
+## Error Handling
+
+The API adapter catches errors and logs them. On failure, it returns empty state so the app can continue:
+
+```typescript
+loadState(): Partial<VigiloState> {
+  try {
+    const response = await fetch(...)
+    if (!response.ok) {
+      if (response.status === 404) return {}  // No state yet
+      throw new Error(response.statusText)
+    }
+    return await response.json()
+  } catch (error) {
+    console.error('Vigilo API storage load error:', error)
+    return {}  // Fallback to empty state
+  }
+}
+```
+
+## Multi-Instance Support
+
+Run multiple overlays with separate database storage:
+
+```tsx
+<VigiloProvider baseUrl="/api/vigilo" defaultInstanceId="profile">
+  <Vigilo category="profile" categories={profileCategories} />
+</VigiloProvider>
+
+<VigiloProvider baseUrl="/api/vigilo" defaultInstanceId="projects">
+  <Vigilo category="projects" categories={projectCategories} />
+</VigiloProvider>
+```
+
+Or use dynamic instance IDs:
+
+```tsx
+function ProjectTasks({ projectId }) {
+  const { getStorage } = useVigiloStorage()
+  const storage = getStorage(`project-${projectId}`)
+  
+  return <Vigilo storage={storage} category="tasks" categories={categories} />
+}
+```

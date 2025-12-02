@@ -1,0 +1,51 @@
+---
+title: Vigilo
+description: Task awareness overlay for development environments
+---
+
+Vigilo is a lightweight overlay that keeps tasks visible on top of your interface. It connects tasks to DOM elements or arbitrary screen positions, persists state across sessions, and works with React out of the box.
+
+## What Vigilo Does
+
+- **Task Overlay**: Draggable panel displaying categorized tasks
+- **DOM Connections**: Link tasks to specific elements via CSS selectors
+- **Freeroam Connections**: Pin tasks to arbitrary x/y screen coordinates
+- **State Persistence**: localStorage by default, database via API adapter
+- **Command Palette**: Global search across all mounted overlays (Alt+K)
+- **Theming**: Override colors, layout, and styles per color mode
+
+## Package Structure
+
+| Package | Purpose |
+|---------|---------|
+| `@remcostoeten/vigilo-core` | Framework-agnostic state, storage, and connection utilities |
+| `@remcostoeten/vigilo-react` | React component, hooks, command palette, DOM helpers |
+| `@vigilo/database` | Database persistence via Prisma/Drizzle, API handlers, React provider |
+
+## Quick Example
+
+```tsx
+import { Vigilo } from '@remcostoeten/vigilo-react'
+
+const categories = [
+  {
+    id: 'dev',
+    displayName: 'Development',
+    items: [
+      { text: 'Fix auth bug', action: 'fix', priority: 'high' },
+      { text: 'Add profile page', action: 'feat' }
+    ]
+  }
+]
+
+function App() {
+  return <Vigilo category="dev" categories={categories} />
+}
+```
+
+<Cards>
+  <Card title="Interactive Demo" href="/docs/demo" />
+  <Card title="Installation" href="/docs/installation" />
+  <Card title="Quick Start" href="/docs/quick-start" />
+  <Card title="Core API" href="/docs/core-api" />
+</Cards>

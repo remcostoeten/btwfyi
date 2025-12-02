@@ -1,0 +1,180 @@
+---
+title: Connections
+description: Link tasks to DOM elements or screen positions
+---
+
+Connections link tasks to targets. A target can be a DOM element (identified by CSS selector) or an arbitrary screen position (freeroam).
+
+## Connection Types
+
+### DOM Connection
+
+Links a task to a specific element on the page:
+
+```typescript
+type DOMConnection = {
+  todoIndex: number
+  targetSelector: string  // CSS selector
+  targetLabel?: string    // Display label
+}
+```
+
+The selector is generated automatically when you click an element. Vigilo prefers IDs, then falls back to positional selectors like `#parent > div:nth-child(2)`.
+
+### Freeroam Connection
+
+Links a task to arbitrary x/y coordinates:
+
+```typescript
+type FreeroamConnection = {
+  todoIndex: number
+  targetPosition: { x: number; y: number }
+}
+```
+
+Hold `Shift` while in connection mode to enable freeroam. Click anywhere to place the connection point.
+
+## Creating Connections
+
+### Via UI
+
+1. Click the connector dot next to a task
+2. Hover over elements to see them highlighted
+3. Click an element to create a DOM connection
+4. Or hold `Shift` and click anywhere for freeroam
+
+### Programmatically
+
+```typescript
+const store = createVigiloStore('my-tasks')
+
+// Add a DOM connection
+store.setConnections([
+  {
+    todoIndex: 0,
+    targetSelector: '#submit-button',
+    targetLabel: 'Submit Form'
+  }
+])
+
+// Add a freeroam connection
+store.setConnections([
+  {
+    todoIndex: 1,
+    targetPosition: { x: 500, y: 300 }
+  }
+])
+```
+
+## Connection Lines
+
+Vigilo draws SVG bezier curves from tasks to their targets. The curves adapt based on horizontal distance.
+
+### calculateBezier
+
+```typescript
+import { calculateBezier } from '@remcostoeten/vigilo-core'
+
+const path = calculateBezier(
+  { x: 100, y: 100 },  // Start (task position)
+  { x: 400, y: 200 }   // End (target position)
+)
+// Returns: "M 100 100 C 175 100, 325 200, 400 200"
+```
+
+The control points are computed to keep curves smooth regardless of panel placement.
+
+### Line Styling
+
+```typescript
+store.setShowLines(true)       // Toggle visibility
+store.setLineColor('#3b82f6')  // Any valid CSS color
+store.setLineOpacity(0.6)      // 0 to 1
+```
+
+## DOM Utilities
+
+The React package exports helpers for working with DOM elements:
+
+### generateSelector
+
+```typescript
+import { generateSelector } from '@remcostoeten/vigilo-react'
+
+const element = document.querySelector('.my-button')
+const selector = generateSelector(element)
+// "#my-button" or "#parent > button:nth-child(2)"
+```
+
+Prefers IDs when available, falls back to positional selectors.
+
+### getElementLabel
+
+```typescript
+import { getElementLabel } from '@remcostoeten/vigilo-react'
+
+const label = getElementLabel(element)
+// "#my-button" or "Submit Form" (from textContent)
+```
+
+Returns a short label for display. Uses ID if present, otherwise truncated text content.
+
+### isValidSelector
+
+```typescript
+import { isValidSelector } from '@remcostoeten/vigilo-react'
+
+if (isValidSelector('#my-button')) {
+  // Selector matches an element in the DOM
+}
+```
+
+Safely checks if a selector can query the current DOM.
+
+## Editing Connections
+
+### Via UI
+
+- **Drag**: Click and drag the connection endpoint to reposition
+- **Delete**: Double-click the endpoint to remove the connection
+- **Context Menu**: Right-click a task for connection options
+
+### Programmatically
+
+```typescript
+const state = store.getState()
+
+// Remove a connection
+const filtered = state.connections.filter(c => c.todoIndex !== 0)
+store.setConnections(filtered)
+
+// Update a connection
+const updated = state.connections.map(c => {
+  if (c.todoIndex === 0) {
+    return { ...c, targetPosition: { x: 600, y: 400 } }
+  }
+  return c
+})
+store.setConnections(updated)
+```
+
+## Connection Persistence
+
+Connections are persisted with the rest of the state. For localStorage:
+
+```json
+// vigilo-state-con-{instanceKey}
+[
+  {
+    "todoIndex": 0,
+    "targetSelector": "#submit-btn",
+    "targetLabel": "Submit"
+  },
+  {
+    "todoIndex": 1,
+    "targetPosition": { "x": 500, "y": 300 }
+  }
+]
+```
+
+For database persistence, connections are stored in the `vigilo_connection` table with separate columns for selector and position data.

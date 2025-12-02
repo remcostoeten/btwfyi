@@ -1,0 +1,69 @@
+---
+title: Installation
+description: Install Vigilo packages
+---
+
+## Core + React
+
+```bash
+npm install @remcostoeten/vigilo-core @remcostoeten/vigilo-react
+```
+
+Or with other package managers:
+
+```bash
+pnpm add @remcostoeten/vigilo-core @remcostoeten/vigilo-react
+yarn add @remcostoeten/vigilo-core @remcostoeten/vigilo-react
+bun add @remcostoeten/vigilo-core @remcostoeten/vigilo-react
+```
+
+## Database Persistence (Optional)
+
+For storing state in your own database instead of localStorage:
+
+```bash
+npm install @vigilo/database
+```
+
+Plus your ORM of choice:
+
+```bash
+# Prisma
+npm install @prisma/client prisma
+
+# Drizzle
+npm install drizzle-orm postgres
+```
+
+## Package Contents
+
+### @remcostoeten/vigilo-core
+
+Framework-agnostic utilities:
+
+- `createVigiloStore` - State management store
+- `createLocalStorageVigiloStorage` - localStorage adapter
+- `createDefaultState` / `hydrateState` - State initialization
+- `calculateBezier` - SVG path generation for connection lines
+- Type definitions: `TodoItem`, `CategoryConfig`, `Connection`, `VigiloState`, `VigiloStorage`
+
+### @remcostoeten/vigilo-react
+
+React bindings:
+
+- `Vigilo` - Main overlay component
+- `VigiloCommandPalette` - Global search palette
+- `useVigiloInstance` - Hook for programmatic control
+- `generateSelector` / `getElementLabel` / `isValidSelector` - DOM utilities
+- Theme and style constants
+
+### @vigilo/database
+
+Database persistence:
+
+- `createApiVigiloStorage` - REST API storage adapter
+- `VigiloProvider` / `useVigiloStorage` - React context for database storage
+- `createVigiloPrismaQueries` / `createVigiloDrizzleQueries` - Server query helpers
+- `createVigiloApiHandlers` - Next.js route handlers
+- `createVigiloRouter` - tRPC router
+- CLI for schema generation
