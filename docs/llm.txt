@@ -1,0 +1,171 @@
+Vigilo LLM context pack
+======================
+
+Purpose
+- Use this as ready-to-paste context for AI assistants (AGENTS.md, .cursorrules, claude.md, etc.).
+- Summarizes how to install Vigilo, integrate React/Vue overlays, use the core API, and configure advanced behavior.
+
+Repository & tooling basics
+- Package name: @remcostoeten/vigilo. Entry points: core ("vigilo"), React ("@remcostoeten/vigilo/react"), Vue ("@remcostoeten/vigilo/vue").
+- Install from a package manager: npm install @remcostoeten/vigilo | pnpm add @remcostoeten/vigilo | yarn add @remcostoeten/vigilo | bun add @remcostoeten/vigilo.
+- Dev commands when working on this repo: bun dev (watch build), bun run build (CJS/ESM/d.ts bundles), bun run typecheck (tsc --noEmit).
+
+Quick start (React)
+- Import and render Vigilo with a category identifier. Supply categories when you want preloaded tasks.
+- Minimal mounting:
+  import { Vigilo } from '@remcostoeten/vigilo/react'
+  <Vigilo category="backend" instanceId="main-backend" />
+- With categories:
+  import type { CategoryConfig } from '@remcostoeten/vigilo/react'
+  const categories: CategoryConfig[] = [{ id: 'backend', displayName: 'Backend Tasks', items: [{ text: 'Fix user authentication bug', status: 'working' }] }]
+  <Vigilo category="backend" instanceId="main-backend" categories={categories} />
+
+Quick start (Vue)
+- Import the Vue component and provide category/instance-key props.
+- Example (template script setup):
+  <Vigilo category="backend" instance-key="main-backend" />
+  <Vigilo category="frontend" instance-key="main-frontend" />
+
+Core concepts & types
+- TodoStatus: 'todo' | 'working' | 'done'.
+- DisplayMode: 'full' | 'compact' | 'minimal'.
+- Pos: { x: number; y: number } for coordinates.
+- Connection: { todoIndex: number; targetLabel?: string; targetPosition?: Pos } for linking tasks to DOM targets.
+- CategoryConfig: { id: string; displayName?: string; defaultStatus?: TodoStatus; allowConnections?: boolean; color?: string }.
+- Theme structure: colors (primary, primaryDim, freeroam, textMain, textDim, bgPanel, borderPanel, bgOverlay), layout classes (panel, item, header, badge), z (lines, overlay, panel).
+- Constants: MAX_VISIBLE_ITEMS = 3; UNDO_WINDOW_MS = 8000.
+
+Components (React)
+- <Vigilo>: props { category: string; instanceId?: string; categories: CategoryConfig[]; themeOverrides?: ThemeOverrides; stylesOverrides?: Styles; colorMode?: 'auto' | 'light' | 'dark' }.
+- <VigiloCommandPalette>: optional global palette with keyboard shortcut customization; props { shortcutKey?: string | null (default 'k'); shortcutModifier?: 'alt' | 'ctrl' | 'meta' | 'shift' (default 'alt'); disableShortcut?: boolean }.
+
+Hooks (React)
+- useVigiloInstance(props): returns connect(taskId, target), disconnect(taskId), focus(category?, taskId?), focusNext(), focusPrevious(), toggleDisplay(mode?), setVisibility(boolean).
+- useVigiloConnection(instanceId): returns connect(taskId, target Element | selector), disconnect(taskId), getConnectedElements(), getConnections().
+
+Vue components & composables
+- <Vigilo> component mirrors React props (category, instanceId?, categories, themeOverrides?, stylesOverrides?, colorMode?).
+- useVigiloStore(instanceKey, overrides?): returns { state: Ref<VigiloState>; addTask(task); updateTask(index, task); deleteTask(index); toggleTask(index); setLineOpacity(opacity); setComponentOpacity(opacity); ... }.
+- useVigiloConnection(instanceId): same connect/disconnect/inspection helpers as React hook.
+
+Configuration & theming
+- Optional props: themeOverrides (colors etc.), stylesOverrides (layout classes), colorMode ('auto' | 'light' | 'dark').
+- Theme override example keys: colors { primary, primaryDim, freeroam, textMain, textDim, bgPanel, borderPanel, bgOverlay }; layout classes { panel, item, header, badge }.
+- Styles overrides can set Tailwind/utility strings, e.g., panel: 'fixed flex flex-col gap-2 rounded-lg border px-4 pb-4 pt-0 w-96 shadow-2xl backdrop-blur-md'.
+- Defaults: max visible items 3; undo window 8000ms; line opacity ~0.7; component opacity ~0.9.
+
+Programmatic control
+- useVigiloConnection: connect(taskId, DOM element or selector string); disconnect(taskId); focus helpers for keyboard/command palette navigation.
+- useVigiloStore: manage tasks (add/update/delete/toggle), adjust opacities, and retrieve state for custom shells.
+- createStorageKeys(instanceKey) namespacing helps isolate persisted state across multiple overlays.
+- createVigiloStore(keys, overrides?) builds a core store if you need framework-agnostic usage.
+
+Keyboard shortcuts & UX
+- Global command palette: Alt+K to open; type "vigilo" to manage overlays.
+- Instance shortcuts: 's' opens the focused instance settings; arrow keys navigate; Enter selects/completes a task; Backspace steps back; Escape closes modals.
+
+Best practices
+- Use unique instanceId/instance-key per overlay to avoid shared state collisions.
+- Organize categories per domain (e.g., user-management, system-admin) and seed items with status/action/info metadata.
+- Handle loading states before mounting Vigilo if categories are async.
+- DOM helpers like generateSelector/getElementLabel live in the React bundle for browser-specific behavior.
+
+Next.js + Neon Postgres (Drizzle) example
+- Goal: persist Vigilo categories/tasks to Neon and hydrate a React/Next.js client overlay.
+- Dependencies: @neondatabase/serverless, drizzle-orm, drizzle-kit, pg (if using migrations locally), @remcostoeten/vigilo.
+- Schema (drizzle/pg-core):
+  import { pgTable, serial, text, pgEnum } from 'drizzle-orm/pg-core'
+  const statusEnum = pgEnum('vigilo_status', ['todo', 'working', 'done'])
+  export const tasks = pgTable('vigilo_tasks', {
+    id: serial('id').primaryKey(),
+    categoryId: text('category_id').notNull(),
+    text: text('text').notNull(),
+    status: statusEnum('status').default('todo').notNull(),
+  })
+- Database client (app/lib/db.ts):
+  import { neon } from '@neondatabase/serverless'
+  import { drizzle } from 'drizzle-orm/neon-http'
+  const sql = neon(process.env.DATABASE_URL!)
+  export const db = drizzle(sql)
+- API route (app/api/vigilo-tasks/route.ts):
+  import { NextResponse } from 'next/server'
+  import { db } from '@/lib/db'
+  import { tasks } from '@/lib/schema'
+  export async function GET() {
+    const rows = await db.select().from(tasks)
+    const categories = Object.values(
+      rows.reduce((acc, row) => {
+        const list = acc[row.categoryId] ?? { id: row.categoryId, items: [] }
+        list.items.push({ text: row.text, status: row.status })
+        acc[row.categoryId] = list
+        return acc
+      }, {} as Record<string, { id: string; items: { text: string; status: string }[] }>),
+    )
+    return NextResponse.json({ categories })
+  }
+- Client component (app/page.tsx):
+  'use client'
+  import { useEffect, useState } from 'react'
+  import { Vigilo, type CategoryConfig } from '@remcostoeten/vigilo/react'
+  export default function Page() {
+    const [categories, setCategories] = useState<CategoryConfig[]>([])
+    useEffect(() => {
+      fetch('/api/vigilo-tasks').then(async (res) => {
+        const data = await res.json()
+        setCategories(data.categories)
+      })
+    }, [])
+    return <Vigilo category={categories[0]?.id ?? 'general'} instanceId="main" categories={categories} />
+  }
+- Migrations: configure drizzle-kit with the Neon connection string; run `drizzle-kit generate` then `drizzle-kit push` (or apply SQL) to provision the table before hitting the API.
+- Tips: use unique instanceId per page/overlay; if using ISR, call the API from a server component and pass serialized categories to reduce client fetches.
+
+Catch-all dynamic routes (Next.js app router)
+- Problem: render a Vigilo instance for a catch-all page (e.g., app/note/[...slug]/page.tsx) without dedicated files per slug.
+- Approach: derive a stable key from the slug, resolve any domain-specific ID, and pass that key into Vigilo as instanceId. Fetch categories lazily when the slug is known.
+- No Vigilo core or API changes are required—this pattern only wires the existing React component and hooks to a dynamic route.
+- Example (client component under app/note/[...slug]/page.tsx):
+  'use client'
+  import { useEffect, useMemo, useState, use } from 'react'
+  import { Vigilo, type CategoryConfig } from '@remcostoeten/vigilo/react'
+  import { useNotesContext } from '@/features/notes/context/notes-context'
+  import { useNoteSlug } from '@/features/notes/hooks/use-note-slug'
+
+  export default function NoteEditorPage({ params }: { params: Promise<{ slug: string[] }> }) {
+    const resolved = use(params)
+    const slugPath = resolved.slug?.join('/') ?? 'root'
+
+    const { items } = useNotesContext()
+    const { resolveNoteId } = useNoteSlug(items)
+    const noteId = useMemo(() => resolveNoteId(slugPath) ?? slugPath, [resolveNoteId, slugPath])
+
+    const [categories, setCategories] = useState<CategoryConfig[]>([])
+    useEffect(() => {
+      const controller = new AbortController()
+      fetch(`/api/vigilo?slug=${encodeURIComponent(noteId)}`, { signal: controller.signal })
+        .then(async (res) => setCategories((await res.json()).categories ?? []))
+        .catch(() => {})
+      return () => controller.abort()
+    }, [noteId])
+
+    if (!noteId) return null
+    return <Vigilo key={noteId} instanceId={`note-${noteId}`} category={categories[0]?.id ?? 'notes'} categories={categories} />
+  }
+- Notes: key/instanceId based on slug keeps overlays isolated per virtual page; you can reuse the same pattern for command palettes or multiple overlays by suffixing the slug (e.g., `note-${noteId}-palette`).
+- API handler idea (app/api/vigilo/route.ts): read the slug from search params, load categories scoped to that slug, and return { categories } so each slug gets its own data.
+
+Integration prompts (copy/paste)
+1) Bootstrap React overlay
+"You are setting up Vigilo in a React app. Use the provided CategoryConfig array and mount <Vigilo category='backend' instanceId='main-backend' categories={categories} />. Respect the available props (themeOverrides, stylesOverrides, colorMode). Provide minimal code that compiles in TypeScript."
+
+2) Create Vue task panel with connections
+"Integrate Vigilo in a Vue 3 <script setup> file. Use category='frontend' and instance-key='main-frontend'. Demonstrate useVigiloConnection to connect task id 1 to #dashboard, and show how to disconnect it."
+
+3) Advanced customization
+"Given a design system, configure Vigilo with custom themeOverrides (primary color, text colors, panel background) and stylesOverrides.panel utility classes. Show how to scope multiple instances with unique instanceId values and describe keyboard shortcuts (Alt+K global palette, 's' instance settings)."
+
+4) Core-only usage
+"Using the vigilo core package, create storage keys for 'app-overlay', load state, and save a position. Outline how createVigiloStore(keys) would be used to manage tasks without React/Vue."
+
+5) Catch-all route mounting
+"You are wiring Vigilo into a Next.js app router catch-all page (app/note/[...slug]/page.tsx). Derive an instanceId from the slug, load categories with fetch(`/api/vigilo?slug=${slug}`), and render <Vigilo key={slug} instanceId={`note-${slug}`} category={categories[0]?.id ?? 'notes'} categories={categories} />. Show how to keep overlays isolated per slug."
