@@ -1246,28 +1246,41 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
 
   const maxItemsForMode = displayMode === 'compact' ? 1 : MAX_VISIBLE_ITEMS
 
-  // Filter items by search query - must be called before any early returns
-  const filteredItems = useMemo(() => {
+  // Filter items by search query with original indices preserved
+  const filteredItemsWithIndices = useMemo(() => {
     if (!categoryData) return []
-    if (!searchQuery.trim()) return categoryData.items
-    const query = searchQuery.toLowerCase()
-    return categoryData.items.filter((item) =>
-      item.text.toLowerCase().includes(query) ||
-      item.action?.toLowerCase().includes(query) ||
-      item.info?.toLowerCase().includes(query) ||
-      item.description?.toLowerCase().includes(query) ||
-      item.tags?.some(tag => tag.toLowerCase().includes(query))
-    )
+    const query = searchQuery.toLowerCase().trim()
+
+    if (!query) {
+      // No search - return all items with their original indices
+      return categoryData.items.map((item, index) => ({ item, originalIndex: index }))
+    }
+
+    // Filter and preserve original indices
+    return categoryData.items
+      .map((item, index) => ({ item, originalIndex: index }))
+      .filter(({ item }) =>
+        item.text.toLowerCase().includes(query) ||
+        item.action?.toLowerCase().includes(query) ||
+        item.info?.toLowerCase().includes(query) ||
+        item.description?.toLowerCase().includes(query) ||
+        item.tags?.some(tag => tag.toLowerCase().includes(query))
+      )
   }, [categoryData, searchQuery])
+
+  const filteredItems = useMemo(
+    () => filteredItemsWithIndices.map(({ item }) => item),
+    [filteredItemsWithIndices]
+  )
 
   // Early returns after all hooks
   if (!categoryData || !isMounted) return null
 
   if (isHidden) return null
 
-  const itemsToRender = isExpanded
-    ? filteredItems
-    : filteredItems.slice(0, maxItemsForMode)
+  const itemsWithIndicesToRender = isExpanded
+    ? filteredItemsWithIndices
+    : filteredItemsWithIndices.slice(0, maxItemsForMode)
   const hasMore = filteredItems.length > maxItemsForMode
   const primaryItem = categoryData.items[0]
   const shouldRenderLines = showLines && !isHidden
@@ -1338,8 +1351,8 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
       <div
         ref={panelRef}
         className={`${displayMode === 'minimal'
-            ? 'fixed w-auto h-auto p-0 m-0'
-            : styles.panel
+          ? 'fixed w-auto h-auto p-0 m-0'
+          : styles.panel
           } ${displayMode === 'compact' ? 'w-72 px-3 pb-3 pt-0 gap-1 text-xs' : ''
           } ${displayMode === 'full' ? 'px-3 pb-3 pt-0' : ''
           } ${className || ''}`}
@@ -1586,8 +1599,8 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
               className={`flex flex-col ${displayMode === 'compact' ? 'gap-0.5' : 'gap-1'
                 }`}
             >
-              {/* Search Input */}
-              {(displayMode === 'full' || displayMode === 'compact') && (
+              {/* Search Input - Only in full mode to save space */}
+              {displayMode === 'full' && (
                 <div className="relative px-3 pb-2">
                   <input
                     data-vigilo-search
@@ -1595,25 +1608,38 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                     placeholder="Search items... (/)"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-2 py-1.5 text-xs font-mono bg-zinc-900 border border-zinc-800 rounded text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition-colors"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') {
+                        e.preventDefault()
+                        setSearchQuery('')
+                      }
+                    }}
+                    className="w-full px-2 py-1.5 text-xs font-mono bg-zinc-900 border border-zinc-800 rounded text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-colors"
+                    aria-label="Search tasks"
+                    aria-description="Press / to focus, ESC to clear"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 text-xs"
+                      className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 text-xs p-1 rounded hover:bg-zinc-800 transition-colors"
+                      aria-label="Clear search"
+                      title="Clear search (ESC)"
                     >
                       ✕
                     </button>
                   )}
                   {searchQuery && (
-                    <div className="absolute left-3 top-full mt-1 text-[10px] text-zinc-500 font-mono">
+                    <div
+                      className="absolute left-3 top-full mt-1 text-[10px] text-zinc-500 font-mono"
+                      role="status"
+                      aria-live="polite"
+                    >
                       {filteredItems.length} result{filteredItems.length !== 1 ? 's' : ''}
                     </div>
                   )}
                 </div>
               )}
-              {itemsToRender.map((item, idx) => {
-                const originalIndex = idx;
+              {itemsWithIndicesToRender.map(({ item, originalIndex }) => {
 
                 const hasConn = connections.find((c) => c.todoIndex === originalIndex)
                 const isSelecting = selectingIndex === originalIndex
@@ -1675,7 +1701,10 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                     {item.action && showBadges && (
                       <span className={styles.badge}>{item.action}</span>
                     )}
-                    <span className={`flex-1 truncate min-w-0 text-sm font-mono ${statusColors[currentStatus]}`}>
+                    <span
+                      className={`flex-1 truncate min-w-0 text-sm font-mono ${statusColors[currentStatus]}`}
+                      title={item.text}
+                    >
                       {item.text}
                     </span>
                     {hasConn && (
@@ -1685,6 +1714,8 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                           removeConnection(originalIndex)
                         }}
                         className="shrink-0 text-xs opacity-50 hover:text-red-400 hover:opacity-100 px-1"
+                        aria-label="Remove connection"
+                        title="Remove connection"
                       >
                         ✕
                       </button>
