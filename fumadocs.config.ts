@@ -25,31 +25,8 @@ export default defineConfig({
   },
 
   // Guide pages for interactive docs
-  pages: [
-    {
-      name: 'Getting Started',
-      slug: 'getting-started',
-      content: 'docs/getting-started.mdx'
-    },
-    {
-      name: 'React Integration',
-      slug: 'react-integration',
-      content: 'docs/react-integration.mdx'
-    },
-    {
-      name: 'Vue Integration',
-      slug: 'vue-integration',
-      content: 'docs/vue-integration.mdx'
-    },
-    {
-      name: 'Configuration Options',
-      slug: 'configuration',
-      content: 'docs/configuration.mdx'
-    },
-    {
-      name: 'API Reference',
-      slug: 'api',
-      content: 'docs/api-reference.mdx'
-    }
-  ]
+  pages: {
+    dir: 'docs',
+    extension: '.mdx'
+  }
 })
