@@ -43,6 +43,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
   themeOverrides,
   stylesOverrides,
   colorMode,
+  className,
 }: VigiloProps<TCategories>) {
   const categoryData = useMemo(
     () => categories.find((c) => c.id === category),
@@ -1336,12 +1337,12 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
       {/* Panel */}
       <div
         ref={panelRef}
-        className={`${styles.panel} ${displayMode === 'compact' ? 'w-72 px-3 pb-3 pt-0 gap-1 text-xs' : ''
-          } ${displayMode === 'minimal'
-            ? 'w-auto h-auto p-0 border-none bg-transparent shadow-none'
-            : ''
+        className={`${displayMode === 'minimal'
+            ? 'fixed w-auto h-auto p-0 m-0'
+            : styles.panel
+          } ${displayMode === 'compact' ? 'w-72 px-3 pb-3 pt-0 gap-1 text-xs' : ''
           } ${displayMode === 'full' ? 'px-3 pb-3 pt-0' : ''
-          }`}
+          } ${className || ''}`}
         style={{
           left: pos.x,
           top: pos.y,
@@ -1655,10 +1656,10 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                           setItemStatus(originalIndex, nextStatus)
                         }}
                         className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${currentStatus === 'done'
-                            ? 'border-green-500 bg-green-500/20'
-                            : currentStatus === 'working'
-                              ? 'border-yellow-500 bg-yellow-500/20'
-                              : 'border-zinc-600 hover:border-zinc-500'
+                          ? 'border-green-500 bg-green-500/20'
+                          : currentStatus === 'working'
+                            ? 'border-yellow-500 bg-yellow-500/20'
+                            : 'border-zinc-600 hover:border-zinc-500'
                           }`}
                         title={`Status: ${currentStatus} (click to cycle)`}
                       >
@@ -1750,10 +1751,10 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                       setItemStatus(openIssueIndex, nextStatus)
                     }}
                     className={`px-3 py-1.5 rounded-md border-2 text-xs font-mono transition-all ${getItemStatus(openIssueIndex) === 'done'
-                        ? 'border-green-500 bg-green-500/20 text-green-400'
-                        : getItemStatus(openIssueIndex) === 'working'
-                          ? 'border-yellow-500 bg-yellow-500/20 text-yellow-400'
-                          : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-600'
+                      ? 'border-green-500 bg-green-500/20 text-green-400'
+                      : getItemStatus(openIssueIndex) === 'working'
+                        ? 'border-yellow-500 bg-yellow-500/20 text-yellow-400'
+                        : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-600'
                       }`}
                   >
                     {getItemStatus(openIssueIndex).toUpperCase()}
@@ -1819,10 +1820,10 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-zinc-500 font-mono">Priority:</span>
                           <span className={`px-2 py-1 rounded text-xs font-mono ${item.priority === 'high'
-                              ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                              : item.priority === 'medium'
-                                ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                                : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                            : item.priority === 'medium'
+                              ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                              : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                             }`}>
                             {item.priority.toUpperCase()}
                           </span>
@@ -1913,10 +1914,10 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
       {toast && createPortal(
         <div
           className={`fixed top-4 right-4 z-[10001] px-4 py-3 rounded-lg border shadow-xl font-mono text-sm transition-all ${toast.type === 'success'
-              ? 'bg-green-500/10 border-green-500/30 text-green-400'
-              : toast.type === 'error'
-                ? 'bg-red-500/10 border-red-500/30 text-red-400'
-                : 'bg-blue-500/10 border-blue-500/30 text-blue-400'
+            ? 'bg-green-500/10 border-green-500/30 text-green-400'
+            : toast.type === 'error'
+              ? 'bg-red-500/10 border-red-500/30 text-red-400'
+              : 'bg-blue-500/10 border-blue-500/30 text-blue-400'
             } vigilo-toast`}
         >
           {toast.message}

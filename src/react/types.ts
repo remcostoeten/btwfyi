@@ -15,6 +15,8 @@ export interface VigiloProps<
 > extends VigiloConfig<TCategories[number]['id']> {
   categories: TCategories
   enabled?: boolean
+  /** Custom className to apply to the panel container */
+  className?: string
   /** Override any theme token while keeping defaults for unspecified keys */
   themeOverrides?: Partial<typeof baseTheme> & {
     modes?: {
