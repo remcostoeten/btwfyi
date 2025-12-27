@@ -1,6 +1,6 @@
 /**
- * @name Vigilo
- * @alias Latin “vigilo” — to watch, stay alert, keep aware
+ * @name Btwfyi
+ * @alias "btwfyi" — By The Way, For Your Information
  * @description A lightweight task awareness overlay for development environments.
  */
 
@@ -21,13 +21,13 @@ import type {
 } from '../core/types'
 import { createStorageKeys } from '../core/storage'
 import { createDefaultState } from '../core/state'
-import { createVigiloStore, type VigiloStore } from '../core/store'
+import { createBtwfyiStore, type BtwfyiStore } from '../core/store'
 import { generateSelector, getElementLabel } from './dom'
 import { calculateBezier } from '../core/connections'
 import { MAX_VISIBLE_ITEMS, UNDO_WINDOW_MS } from './constants'
-import type { VigiloProps, CategoryConfig } from './types'
+import type { BtwfyiProps, CategoryConfig } from './types'
 import { updatePaletteInstance, removePaletteInstance } from './registry'
-import { VigiloCommandPalette } from './cmd'
+import { BtwfyiCommandPalette } from './CommandPalette'
 import { mergeTheme, mergeStyles } from './theme'
 
 let paletteMounted = false
@@ -36,7 +36,7 @@ let paletteMounted = false
 /*                                  COMPONENT                                 */
 /* -------------------------------------------------------------------------- */
 
-function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConfig[]>({
+function BtwfyiCore<TCategories extends readonly CategoryConfig[] = CategoryConfig[]>({
   category,
   instanceId,
   categories,
@@ -44,7 +44,8 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
   stylesOverrides,
   colorMode,
   className,
-}: VigiloProps<TCategories>) {
+  onTaskCreate,
+}: BtwfyiProps<TCategories>) {
   const categoryData = useMemo(
     () => categories.find((c) => c.id === category),
     [category, categories]
@@ -92,7 +93,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
-  const storeRef = useRef<VigiloStore | null>(null)
+  const storeRef = useRef<BtwfyiStore | null>(null)
 
   const {
     position: pos,
@@ -136,7 +137,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
 
   // Initialization
   useEffect(() => {
-    const store = createVigiloStore(keys, { lineColor: primaryLineColor })
+    const store = createBtwfyiStore(keys, { lineColor: primaryLineColor })
     storeRef.current = store
     setStoreState(store.getState())
     setIsMounted(true)
@@ -358,8 +359,8 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
   // Selection Visuals
   useEffect(() => {
     if (!hoveredTarget) return
-    hoveredTarget.classList.add('vigilo-target-hover')
-    return () => hoveredTarget.classList.remove('vigilo-target-hover')
+    hoveredTarget.classList.add('btwfyi-target-hover')
+    return () => hoveredTarget.classList.remove('btwfyi-target-hover')
   }, [hoveredTarget])
 
   // Connection Point Editing Logic
@@ -590,7 +591,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
         e.preventDefault()
         e.stopPropagation()
         // Focus search if available, or just enable search mode
-        const searchInput = document.querySelector('[data-vigilo-search]') as HTMLInputElement
+        const searchInput = document.querySelector('[data-btwfyi-search]') as HTMLInputElement
         if (searchInput) {
           searchInput.focus()
         }
@@ -963,7 +964,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `vigilo-${instanceKey}-${new Date().toISOString().split('T')[0]}.json`
+      a.download = `btwfyi-${instanceKey}-${new Date().toISOString().split('T')[0]}.json`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -1181,7 +1182,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                   strokeWidth="2"
                   fill="none"
                   strokeDasharray="6 4"
-                  style={{ animation: 'vigilo-dash 30s linear infinite' }}
+                  style={{ animation: 'btwfyi-dash 30s linear infinite' }}
                   opacity={strokeOpacity}
                 />
                 <circle
@@ -1288,10 +1289,10 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
   return (
     <>
       <style>{`
-        @keyframes vigilo-dash {
+        @keyframes btwfyi-dash {
           to { stroke-dashoffset: -100; }
         }
-        @keyframes vigilo-toast-in {
+        @keyframes btwfyi-toast-in {
           from {
             opacity: 0;
             transform: translateY(-10px);
@@ -1301,7 +1302,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
             transform: translateY(0);
           }
         }
-        @keyframes vigilo-toast-out {
+        @keyframes btwfyi-toast-out {
           from {
             opacity: 1;
             transform: translateY(0);
@@ -1311,19 +1312,21 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
             transform: translateY(-10px);
           }
         }
-        .vigilo-target-hover {
+        .btwfyi-target-hover {
           outline: 2px solid ${theme.colors.primary} !important;
           outline-offset: 2px;
           background-color: ${theme.colors.primaryDim} !important;
           cursor: crosshair !important;
         }
-        .vigilo-toast {
-          animation: vigilo-toast-in 0.2s ease-out;
+        .btwfyi-toast {
+          animation: btwfyi-toast-in 0.2s ease-out;
         }
-        .vigilo-toast-exit {
-          animation: vigilo-toast-out 0.2s ease-in;
+        .btwfyi-toast-exit {
+          animation: btwfyi-toast-out 0.2s ease-in;
         }
       `}</style>
+
+      <BtwfyiCommandPalette onTaskCreate={onTaskCreate} />
 
       {(shouldRenderLines || selectingIndex !== null) && renderLines()}
 
@@ -1550,6 +1553,11 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                         style={{
                           background: `linear-gradient(to right, ${lineColor} 0%, ${lineColor} ${lineOpacity * 100}%, rgb(39, 39, 42) ${lineOpacity * 100}%, rgb(39, 39, 42) 100%)`,
                         }}
+                        aria-label="Line opacity"
+                        aria-valuemin={0}
+                        aria-valuemax={1}
+                        aria-valuenow={lineOpacity}
+                        aria-valuetext={`${Math.round(lineOpacity * 100)}%`}
                       />
                     </div>
                     <div className="px-3 py-1.5">
@@ -1565,6 +1573,11 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                         value={componentOpacity}
                         onChange={(e) => handleSetComponentOpacity(parseFloat(e.target.value))}
                         className="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer"
+                        aria-label="Component opacity"
+                        aria-valuemin={0.1}
+                        aria-valuemax={1}
+                        aria-valuenow={componentOpacity}
+                        aria-valuetext={`${Math.round(componentOpacity * 100)}%`}
                       />
                     </div>
                     <div className="my-1 border-t border-zinc-800" />
@@ -1603,7 +1616,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
               {displayMode === 'full' && (
                 <div className="relative px-3 pb-2">
                   <input
-                    data-vigilo-search
+                    data-btwfyi-search
                     type="text"
                     placeholder="Search items... (/)"
                     value={searchQuery}
@@ -1688,6 +1701,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                             : 'border-zinc-600 hover:border-zinc-500'
                           }`}
                         title={`Status: ${currentStatus} (click to cycle)`}
+                        aria-label={`Current status: ${currentStatus}. Click to cycle to next status.`}
                       >
                         {currentStatus === 'done' && (
                           <span className="text-[10px] text-green-400">✓</span>
@@ -1760,6 +1774,9 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
               backgroundColor: 'rgba(0, 0, 0, 0.7)',
               backdropFilter: 'blur(4px)',
             }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="btwfyi-issue-title"
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 setOpenIssueIndex(null)
@@ -1810,7 +1827,10 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                 <div className="space-y-6">
                   {/* Title */}
                   <div>
-                    <h2 className="text-xl font-mono font-semibold text-gray-200 mb-2">
+                    <h2
+                      id="btwfyi-issue-title"
+                      className="text-xl font-mono font-semibold text-gray-200 mb-2"
+                    >
                       {item.text}
                     </h2>
                     {item.description && (
@@ -1949,7 +1969,9 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
             : toast.type === 'error'
               ? 'bg-red-500/10 border-red-500/30 text-red-400'
               : 'bg-blue-500/10 border-blue-500/30 text-blue-400'
-            } vigilo-toast`}
+            } btwfyi-toast`}
+          role="alert"
+          aria-live="assertive"
         >
           {toast.message}
         </div>,
@@ -1964,6 +1986,9 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
             backgroundColor: 'rgba(0, 0, 0, 0.7)',
             backdropFilter: 'blur(4px)',
           }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="btwfyi-keyboard-title"
           onClick={() => setShowKeyboardHelp(false)}
         >
           <div
@@ -1971,7 +1996,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
             onClick={(e) => e.stopPropagation()}
           >
             <div className="sticky top-0 flex items-center justify-between border-b border-zinc-800 px-6 py-4 bg-zinc-950">
-              <h2 className="text-lg font-mono font-semibold text-gray-200">Keyboard Shortcuts</h2>
+              <h2 id="btwfyi-keyboard-title" className="text-lg font-mono font-semibold text-gray-200">Keyboard Shortcuts</h2>
               <button
                 onClick={() => setShowKeyboardHelp(false)}
                 className="p-2 hover:bg-white/5 rounded transition-colors text-zinc-400 hover:text-white"
@@ -2072,11 +2097,11 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
 }
 
 /**
- * React wrapper that renders the Vigilo overlay. Pass literal `categories`
+ * React wrapper that renders the Btwfyi overlay. Pass literal `categories`
  * to get autocomplete for valid ids, and supply theme overrides to fully brand it.
  */
-export function Vigilo<TCategories extends readonly CategoryConfig[] = CategoryConfig[]>(
-  props: VigiloProps<TCategories>
+export function Btwfyi<TCategories extends readonly CategoryConfig[] = CategoryConfig[]>(
+  props: BtwfyiProps<TCategories>
 ) {
   const [shouldRenderPalette, setShouldRenderPalette] = useState(paletteMounted)
 
@@ -2089,8 +2114,8 @@ export function Vigilo<TCategories extends readonly CategoryConfig[] = CategoryC
 
   return (
     <>
-      {props.enabled ? <VigiloCore {...props} /> : null}
-      {shouldRenderPalette ? <VigiloCommandPalette /> : null}
+      {props.enabled ? <BtwfyiCore {...props} /> : null}
+      {shouldRenderPalette ? <BtwfyiCommandPalette /> : null}
     </>
   )
 }

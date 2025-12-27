@@ -8,9 +8,9 @@ This file contains complete, copy-paste ready examples for setting up Vigilo dat
 ```json
 {
   "dependencies": {
-    "@remcostoeten/vigilo-core": "^0.0.1",
-    "@remcostoeten/vigilo-react": "^0.0.1",
-    "@vigilo/database": "^0.0.1",
+    "btwfyi-core": "^0.0.1",
+    "btwfyi-react": "^0.0.1",
+    "@btwfyi/database": "^0.0.1",
     "@prisma/client": "^5.0.0",
     "prisma": "^5.0.0",
     "next": "^14.0.0",
@@ -22,7 +22,7 @@ This file contains complete, copy-paste ready examples for setting up Vigilo dat
 
 ### 2. Generate Schema
 ```bash
-npx vigilo-db --prisma --out prisma/schema.prisma
+npx btwfyi-db --prisma --out prisma/schema.prisma
 ```
 
 ### 3. prisma/schema.prisma ( Generated )
@@ -122,11 +122,11 @@ npx prisma generate
 npx prisma db push
 ```
 
-### 5. API Route - app/api/vigilo/state/[instanceKey]/route.ts
+### 5. API Route - app/api/btwfyi/state/[instanceKey]/route.ts
 ```typescript
 import { NextRequest, NextResponse } from 'next/server'
-import { createVigiloApiHandlers } from '@vigilo/database/server/handlers'
-import { createVigiloPrismaQueries } from '@vigilo/database/server/prisma'
+import { createVigiloApiHandlers } from '@btwfyi/database/server/handlers'
+import { createVigiloPrismaQueries } from '@btwfyi/database/server/prisma'
 import { PrismaClient } from '@prisma/client'
 
 // Singleton Prisma client for production
@@ -138,7 +138,7 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 const queries = createVigiloPrismaQueries(prisma)
 const handlers = createVigiloApiHandlers(queries)
 
-// GET /api/vigilo/state/[instanceKey] - Load complete state
+// GET /api/btwfyi/state/[instanceKey] - Load complete state
 export async function GET(
   request: NextRequest,
   { params }: { params: { instanceKey: string } }
@@ -154,7 +154,7 @@ export async function GET(
   }
 }
 
-// POST /api/vigilo/state/[instanceKey] - Save specific state updates
+// POST /api/btwfyi/state/[instanceKey] - Save specific state updates
 export async function POST(
   request: NextRequest,
   { params }: { params: { instanceKey: string } }
@@ -201,9 +201,9 @@ export async function POST(
 ```tsx
 'use client'
 
-import { VigiloProvider } from '@vigilo/database'
-import { Vigilo } from '@remcostoeten/vigilo-react'
-import type { CategoryConfig } from '@remcostoeten/vigilo-core'
+import { VigiloProvider } from '@btwfyi/database'
+import { Vigilo } from 'btwfyi-react'
+import type { CategoryConfig } from 'btwfyi-core'
 
 // Example categories - customize for your app
 const taskCategories: CategoryConfig[] = [
@@ -252,7 +252,7 @@ export function VigiloTaskManager({ userId, projectId }: VigiloTaskManagerProps)
 
   return (
     <VigiloProvider
-      baseUrl="/api/vigilo"
+      baseUrl="/api/btwfyi"
       defaultInstanceId={instanceId}
       getAuthToken={() => {
         // Implement your auth token retrieval
@@ -321,9 +321,9 @@ export default function DashboardPage() {
 ```json
 {
   "dependencies": {
-    "@remcostoeten/vigilo-core": "^0.0.1",
-    "@remcostoeten/vigilo-react": "^0.0.1",
-    "@vigilo/database": "^0.0.1",
+    "btwfyi-core": "^0.0.1",
+    "btwfyi-react": "^0.0.1",
+    "@btwfyi/database": "^0.0.1",
     "drizzle-orm": "^0.29.0",
     "postgres": "^3.4.0",
     "drizzle-kit": "^0.20.0",
@@ -336,14 +336,14 @@ export default function DashboardPage() {
 
 ### 2. Generate Schema
 ```bash
-npx vigilo-db --drizzle --out lib/db/schema.ts
+npx btwfyi-db --drizzle --out lib/db/schema.ts
 ```
 
 ### 3. lib/db/schema.ts ( Generated )
 ```typescript
 import { pgTable, text, integer, timestamp, varchar, boolean, real, unique } from 'drizzle-orm/pg-core';
 
-export const vigiloInstance = pgTable('vigilo_instance', {
+export const btwfyiInstance = pgTable('btwfyi_instance', {
   id: text('id').primaryKey(),
   instanceKey: text('instance_key').unique().notNull(),
   userId: text('user_id'),
@@ -351,9 +351,9 @@ export const vigiloInstance = pgTable('vigilo_instance', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-export const vigiloPosition = pgTable('vigilo_position', {
+export const btwfyiPosition = pgTable('btwfyi_position', {
   id: text('id').primaryKey(),
-  instanceId: text('instance_id').notNull().references(() => vigiloInstance.id, { onDelete: 'cascade' }),
+  instanceId: text('instance_id').notNull().references(() => btwfyiInstance.id, { onDelete: 'cascade' }),
   x: integer('x').notNull(),
   y: integer('y').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -362,9 +362,9 @@ export const vigiloPosition = pgTable('vigilo_position', {
   instanceIdIdx: unique().on(table.instanceId),
 }));
 
-export const vigiloConnection = pgTable('vigilo_connection', {
+export const btwfyiConnection = pgTable('btwfyi_connection', {
   id: text('id').primaryKey(),
-  instanceId: text('instance_id').notNull().references(() => vigiloInstance.id, { onDelete: 'cascade' }),
+  instanceId: text('instance_id').notNull().references(() => btwfyiInstance.id, { onDelete: 'cascade' }),
   todoIndex: integer('todo_index').notNull(),
   targetSelector: text('target_selector'),
   targetLabel: text('target_label'),
@@ -376,9 +376,9 @@ export const vigiloConnection = pgTable('vigilo_connection', {
   instanceTodoIdx: unique().on(table.instanceId, table.todoIndex),
 }));
 
-export const vigiloSettings = pgTable('vigilo_settings', {
+export const btwfyiSettings = pgTable('btwfyi_settings', {
   id: text('id').primaryKey(),
-  instanceId: text('instance_id').notNull().references(() => vigiloInstance.id, { onDelete: 'cascade' }),
+  instanceId: text('instance_id').notNull().references(() => btwfyiInstance.id, { onDelete: 'cascade' }),
   displayMode: varchar('display_mode', { length: 50 }).default('full').notNull(),
   isHidden: boolean('is_hidden').default(false).notNull(),
   showLines: boolean('show_lines').default(true).notNull(),
@@ -392,9 +392,9 @@ export const vigiloSettings = pgTable('vigilo_settings', {
   instanceIdIdx: unique().on(table.instanceId),
 }));
 
-export const vigiloStatus = pgTable('vigilo_status', {
+export const btwfyiStatus = pgTable('btwfyi_status', {
   id: text('id').primaryKey(),
-  instanceId: text('instance_id').notNull().references(() => vigiloInstance.id, { onDelete: 'cascade' }),
+  instanceId: text('instance_id').notNull().references(() => btwfyiInstance.id, { onDelete: 'cascade' }),
   todoIndex: integer('todo_index').notNull(),
   status: varchar('status', { length: 20 }).default('todo').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -403,16 +403,16 @@ export const vigiloStatus = pgTable('vigilo_status', {
   instanceTodoIdx: unique().on(table.instanceId, table.todoIndex),
 }));
 
-export type VigiloInstance = typeof vigiloInstance.$inferSelect;
-export type NewVigiloInstance = typeof vigiloInstance.$inferInsert;
-export type VigiloPosition = typeof vigiloPosition.$inferSelect;
-export type NewVigiloPosition = typeof vigiloPosition.$inferInsert;
-export type VigiloConnection = typeof vigiloConnection.$inferSelect;
-export type NewVigiloConnection = typeof vigiloConnection.$inferInsert;
-export type VigiloSettings = typeof vigiloSettings.$inferSelect;
-export type NewVigiloSettings = typeof vigiloSettings.$inferInsert;
-export type VigiloStatus = typeof vigiloStatus.$inferSelect;
-export type NewVigiloStatus = typeof vigiloStatus.$inferInsert;
+export type VigiloInstance = typeof btwfyiInstance.$inferSelect;
+export type NewVigiloInstance = typeof btwfyiInstance.$inferInsert;
+export type VigiloPosition = typeof btwfyiPosition.$inferSelect;
+export type NewVigiloPosition = typeof btwfyiPosition.$inferInsert;
+export type VigiloConnection = typeof btwfyiConnection.$inferSelect;
+export type NewVigiloConnection = typeof btwfyiConnection.$inferInsert;
+export type VigiloSettings = typeof btwfyiSettings.$inferSelect;
+export type NewVigiloSettings = typeof btwfyiSettings.$inferInsert;
+export type VigiloStatus = typeof btwfyiStatus.$inferSelect;
+export type NewVigiloStatus = typeof btwfyiStatus.$inferInsert;
 ```
 
 ### 4. lib/db/index.ts
@@ -455,17 +455,17 @@ npx drizzle-kit generate
 npx drizzle-kit migrate
 ```
 
-### 7. API Route - app/api/vigilo/state/[instanceKey]/route.ts
+### 7. API Route - app/api/btwfyi/state/[instanceKey]/route.ts
 ```typescript
 import { NextRequest, NextResponse } from 'next/server'
-import { createVigiloApiHandlers } from '@vigilo/database/server/handlers'
-import { createVigiloDrizzleQueries } from '@vigilo/database/server/drizzle'
+import { createVigiloApiHandlers } from '@btwfyi/database/server/handlers'
+import { createVigiloDrizzleQueries } from '@btwfyi/database/server/drizzle'
 import { db } from '@/lib/db'
 
 const queries = createVigiloDrizzleQueries(db)
 const handlers = createVigiloApiHandlers(queries)
 
-// GET /api/vigilo/state/[instanceKey] - Load complete state
+// GET /api/btwfyi/state/[instanceKey] - Load complete state
 export async function GET(
   request: NextRequest,
   { params }: { params: { instanceKey: string } }
@@ -481,7 +481,7 @@ export async function GET(
   }
 }
 
-// POST /api/vigilo/state/[instanceKey] - Save specific state updates
+// POST /api/btwfyi/state/[instanceKey] - Save specific state updates
 export async function POST(
   request: NextRequest,
   { params }: { params: { instanceKey: string } }
@@ -529,8 +529,8 @@ export async function POST(
 ### 1. server.js ( Express + Prisma )
 ```javascript
 import express from 'express'
-import { createVigiloApiHandlers } from '@vigilo/database/server/handlers'
-import { createVigiloPrismaQueries } from '@vigilo/database/server/prisma'
+import { createVigiloApiHandlers } from '@btwfyi/database/server/handlers'
+import { createVigiloPrismaQueries } from '@btwfyi/database/server/prisma'
 import { PrismaClient } from '@prisma/client'
 
 const app = express()
@@ -553,8 +553,8 @@ function authMiddleware(req, res, next) {
   next()
 }
 
-// GET /api/vigilo/state/:instanceKey
-app.get('/api/vigilo/state/:instanceKey', authMiddleware, async (req, res) => {
+// GET /api/btwfyi/state/:instanceKey
+app.get('/api/btwfyi/state/:instanceKey', authMiddleware, async (req, res) => {
   try {
     const response = await handlers.handleLoadState(req, { params: req.params })
     const data = await response.json()
@@ -565,8 +565,8 @@ app.get('/api/vigilo/state/:instanceKey', authMiddleware, async (req, res) => {
   }
 })
 
-// POST /api/vigilo/state/:instanceKey
-app.post('/api/vigilo/state/:instanceKey', authMiddleware, async (req, res) => {
+// POST /api/btwfyi/state/:instanceKey
+app.post('/api/btwfyi/state/:instanceKey', authMiddleware, async (req, res) => {
   try {
     const { type } = req.body
     
@@ -610,14 +610,14 @@ function getUserFromToken(token) {
 ### .env.local
 ```env
 # Database
-DATABASE_URL="postgresql://username:password@localhost:5432/vigilo_db"
+DATABASE_URL="postgresql://username:password@localhost:5432/btwfyi_db"
 
 # Next.js
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="your-secret-key"
 
 # Custom API ( if using Express server )
-API_BASE_URL="http://localhost:3001/api/vigilo"
+API_BASE_URL="http://localhost:3001/api/btwfyi"
 ```
 
 ## 🎯 TypeScript Configuration
@@ -658,9 +658,9 @@ API_BASE_URL="http://localhost:3001/api/vigilo"
 
 ## 🎯 Testing Setup
 
-### __tests__/vigilo-storage.test.ts
+### __tests__/btwfyi-storage.test.ts
 ```typescript
-import { createApiVigiloStorage } from '@vigilo/database'
+import { createApiVigiloStorage } from '@btwfyi/database'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 describe('Vigilo Storage', () => {
@@ -668,7 +668,7 @@ describe('Vigilo Storage', () => {
   
   beforeEach(() => {
     storage = createApiVigiloStorage({
-      baseUrl: 'http://localhost:3000/api/vigilo',
+      baseUrl: 'http://localhost:3000/api/btwfyi',
       instanceId: 'test-instance',
       token: 'test-token'
     })
@@ -686,7 +686,7 @@ describe('Vigilo Storage', () => {
     await storage.savePosition(position)
     
     expect(fetch).toHaveBeenCalledWith(
-      'http://localhost:3000/api/vigilo/position/test-instance',
+      'http://localhost:3000/api/btwfyi/position/test-instance',
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({
@@ -756,7 +756,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/vigilo
+      - DATABASE_URL=postgresql://postgres:password@db:5432/btwfyi
       - NODE_ENV=production
     depends_on:
       - db
@@ -764,7 +764,7 @@ services:
   db:
     image: postgres:15
     environment:
-      - POSTGRES_DB=vigilo
+      - POSTGRES_DB=btwfyi
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
     volumes:

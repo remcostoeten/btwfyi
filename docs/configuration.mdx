@@ -7,82 +7,198 @@ description: Learn how to customize Vigilo's appearance and behavior
 
 Vigilo supports extensive customization through props and themes to match your application's design system.
 
-## Basic Props
+## Props Reference
 
 ### Required Props
 
-- **category**: `string` - The category identifier for organizing tasks
-- **instanceId**: `string` (optional) - Unique identifier when multiple instances exist
+| Prop | Type | Description |
+|------|------|-------------|
+| `category` | `string` | Category ID to display |
+| `categories` | `CategoryConfig[]` | Array of all category configurations |
 
 ### Optional Props
 
-- **themeOverrides**: `ThemeOverrides` - Customize colors and styles
-- **stylesOverrides**: `Styles` - Override CSS classes and component styles
-- **colorMode**: `'auto' | 'light' | 'dark'` - Force color mode
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `instanceId` | `string` | category | Unique identifier for isolation |
+| `enabled` | `boolean` | `true` | Enable/disable the overlay |
+| `storage` | `VigiloStorage` | localStorage | Custom storage adapter |
+| `themeOverrides` | `ThemeOverrides` | - | Color and layout customization |
+| `stylesOverrides` | `Styles` | - | CSS classes and SVG attributes |
+| `colorMode` | `'light' \| 'dark'` | - | Force color mode |
 
-## Theme Customization
+## Easy Styling
+
+### Quick Opacity Adjustment
+
+```tsx
+<Vigilo
+  category="development"
+  categories={categories}
+  themeOverrides={{
+    colors: {
+      bgPanel: 'bg-zinc-950/70',  // 70% opacity panel
+      bgOverlay: 'rgba(0, 0, 0, 0.1)',
+    },
+  }}
+/>
+```
+
+### Subtle/Ghost Mode
+
+```tsx
+const subtleTheme = {
+  colors: {
+    primary: 'rgba(100, 100, 100, 0.5)',
+    textMain: 'text-gray-400',
+    textDim: 'text-gray-600',
+    bgPanel: 'bg-black/40',
+    borderPanel: 'border-gray-800/50',
+  },
+}
+
+<Vigilo
+  category="development"
+  categories={categories}
+  themeOverrides={subtleTheme}
+  stylesOverrides={{
+    connectorDot: { fill: 'rgba(100, 100, 100, 0.5)', r: 3 },
+  }}
+/>
+```
+
+### Vibrant/Prominent Mode
+
+```tsx
+const vibrantTheme = {
+  colors: {
+    primary: '#22c55e',
+    primaryDim: 'rgba(34, 197, 94, 0.2)',
+    textMain: 'text-white',
+    bgPanel: 'bg-zinc-900',
+    borderPanel: 'border-green-500/50',
+  },
+}
+
+<Vigilo
+  category="development"
+  categories={categories}
+  themeOverrides={vibrantTheme}
+/>
+```
+
+## Runtime Style Control
+
+Users can adjust styling via the settings panel (press **'s'**), or programmatically:
+
+```tsx
+import { useVigiloInstance } from 'btwfyi/react'
+
+function StyleController() {
+  const { store } = useVigiloInstance({ instanceId: 'development' })
+
+  return (
+    <div>
+      {/* Opacity sliders */}
+      <input
+        type="range"
+        min="0"
+        max="100"
+        onChange={(e) => store?.setLineOpacity(Number(e.target.value) / 100)}
+      />
+      <input
+        type="range"
+        min="10"
+        max="100"
+        onChange={(e) => store?.setComponentOpacity(Number(e.target.value) / 100)}
+      />
+      
+      {/* Color picker */}
+      <input
+        type="color"
+        onChange={(e) => store?.setLineColor(e.target.value)}
+      />
+      
+      {/* Toggles */}
+      <button onClick={() => store?.setShowLines(false)}>Hide Lines</button>
+      <button onClick={() => store?.setShowBadges(false)}>Hide Badges</button>
+    </div>
+  )
+}
+```
+
+## Theme Structure
 
 ### Colors
 
-```tsx
+```ts
 const theme = {
   colors: {
-    primary: '#3b82f6',      // Main accent color
-    primaryDim: 'rgba(59, 130, 246, 0.1)',
-    freeroam: '#8b5cf6',      // Connection mode color
-    textMain: '#ffffff',        // Main text color
-    textDim: '#9ca3af',         // Secondary text color
-    bgPanel: '#000000',        // Panel background
-    borderPanel: '#374151',     // Panel border
-    bgOverlay: 'rgba(0, 0, 0, 0.3)'
-  }
+    primary: '#3b82f6',                    // Accent color (lines, highlights)
+    primaryDim: 'rgba(59, 130, 246, 0.1)', // Dimmed accent for backgrounds
+    freeroam: '#8b5cf6',                   // Freeroam connection color
+    textMain: 'text-white',                // Main text (Tailwind or CSS)
+    textDim: 'text-gray-500',              // Secondary text
+    bgPanel: 'bg-zinc-950',                // Panel background
+    borderPanel: 'border-zinc-800',        // Panel border
+    bgOverlay: 'rgba(0, 0, 0, 0.0)',       // Selection overlay
+  },
 }
 ```
 
 ### Layout Classes
 
-```tsx
+```ts
 const styles = {
-  panel: 'fixed flex flex-col gap-2 rounded-lg border px-4 pb-4 pt-0 w-96 shadow-2xl transition-all backdrop-blur-md z-50',
-  item: 'relative flex items-center gap-3 p-1.5 px-2 rounded transition-colors w-full',
+  panel: 'fixed flex flex-col gap-2 border px-4 pb-4 pt-0 w-96 shadow-2xl backdrop-blur-md',
+  item: 'relative flex items-center gap-3 p-1.5 px-2 transition-colors w-full',
   header: 'flex items-center justify-between gap-2 min-w-0 border-b pb-1',
-  badge: 'shrink-0 rounded px-1.5 py-0.5 text-xs font-medium'
+  badge: 'shrink-0 px-1.5 py-0.5 text-xs font-medium',
 }
 ```
 
-## Advanced Configuration
+### Connector Dots (SVG)
 
-### Programmatic API
-
-Create instances programmatically and control them via JavaScript:
-
-```tsx
-const { connect, disconnect, focus } = useVigiloConnection('backend-tasks')
-
-// Connection management
-connect('user-profile-task', document.querySelector('#profile'))
-connect('api-endpoint-task', 'https://api.example.com/users')
-
-// Task management
-focus('backend-tasks', 0) // Focus on first task
+```ts
+const stylesOverrides = {
+  connectorDot: {
+    fill: '#3b82f6',  // Dot color
+    r: 4,             // Radius in pixels
+  },
+  freeroamDot: {
+    fill: '#8b5cf6',
+    stroke: '#8b5cf6',
+    strokeWidth: 1.5,
+    r: 3.5,
+    opacity: 0.9,
+  },
+}
 ```
 
-### Instance Isolation
-
-When using multiple Vigilo instances:
+## Light/Dark Mode
 
 ```tsx
-// Each instance has isolated state
-<Vigilo category="backend" instanceId="user-profile" />
-<Vigilo category="frontend" instanceId="ui-components" />
-
-// Keyboard shortcuts are scoped per instance
-// Pressing 's' only opens the focused instance's settings
+<Vigilo
+  category="development"
+  categories={categories}
+  colorMode="dark"
+  themeOverrides={{
+    modes: {
+      light: {
+        colors: {
+          textMain: 'text-gray-900',
+          bgPanel: 'bg-white',
+          borderPanel: 'border-gray-200',
+        },
+      },
+      dark: {
+        colors: {
+          textMain: 'text-gray-100',
+          bgPanel: 'bg-zinc-950',
+          borderPanel: 'border-zinc-800',
+        },
+      },
+    },
+  }}
+/>
 ```
-
-### Default Values
-
-- **Maximum visible items**: 3 (adjustable via theme)
-- **Undo window**: 8 seconds (adjustable via config)
-- **Line opacity**: 0.7 (adjustable via prop)
-- **Component opacity**: 0.9 (adjustable via prop)

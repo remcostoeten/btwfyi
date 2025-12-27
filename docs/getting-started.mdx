@@ -5,7 +5,7 @@ description: Learn how to install and use Vigilo in your projects
 
 # Getting Started with Vigilo
 
-Vigilo is a lightweight task awareness overlay that helps you track development tasks across different projects and contexts.
+Vigilo is a lightweight task awareness overlay that helps you track development tasks and connect them to DOM elements.
 
 ## Installation
 
@@ -14,14 +14,14 @@ Vigilo is a lightweight task awareness overlay that helps you track development 
 Choose your preferred package manager:
 
 ```bash
-# npm
-npm install @remcostoeten/vigilo
-
-# yarn
-yarn add @remcostoeten/vigilo
+# pnpm (recommended)
+pnpm add btwfyi
 
 # bun
-bun add @remcostoeten/vigilo
+bun add btwfyi
+
+# npm
+npm install btwfyi
 ```
 
 ## Quick Setup
@@ -29,13 +29,33 @@ bun add @remcostoeten/vigilo
 ### React Integration
 
 ```tsx
-import { Vigilo } from '@remcostoeten/vigilo/react'
+import { Vigilo } from 'btwfyi/react'
+import type { CategoryConfig } from 'btwfyi'
+
+const categories: CategoryConfig[] = [
+  {
+    id: 'backend',
+    displayName: 'Backend Tasks',
+    items: [
+      { text: 'Fix user authentication bug', action: 'fix', priority: 'high' },
+      { text: 'Add API rate limiting', action: 'feat', priority: 'medium' },
+    ],
+  },
+  {
+    id: 'frontend',
+    displayName: 'Frontend Tasks',
+    items: [
+      { text: 'Implement new dashboard', action: 'feat', priority: 'high' },
+      { text: 'Add dark mode support', action: 'feat', priority: 'low' },
+    ],
+  },
+]
 
 function App() {
   return (
     <div>
-      <Vigilo category="backend" instanceId="main-backend" />
-      <Vigilo category="frontend" instanceId="main-frontend" />
+      <Vigilo category="backend" instanceId="main-backend" categories={categories} />
+      <Vigilo category="frontend" instanceId="main-frontend" categories={categories} />
     </div>
   )
 }
@@ -46,55 +66,59 @@ function App() {
 ```vue
 <template>
   <div>
-    <Vigilo category="backend" instance-key="main-backend" />
-    <Vigilo category="frontend" instance-key="main-frontend" />
+    <Vigilo category="backend" instance-key="main-backend" :categories="categories" />
+    <Vigilo category="frontend" instance-key="main-frontend" :categories="categories" />
   </div>
 </template>
 
 <script setup>
-import { Vigilo } from '@remcostoeten/vigilo/vue'
+import { Vigilo } from 'btwfyi/vue'
 </script>
 ```
 
-## Configuration
+## Easy Styling
 
-### Categories
-
-Organize your tasks by creating categories:
+### Adjust Opacity and Colors via Props
 
 ```tsx
-const categories = [
-  {
-    id: 'backend',
-    displayName: 'Backend Tasks',
-    items: [
-      { text: 'Fix user authentication bug', status: 'working' },
-      { text: 'Add API rate limiting', status: 'todo' }
-    ]
-  },
-  {
-    id: 'frontend',
-    displayName: 'Frontend Tasks',
-    items: [
-      { text: 'Implement new dashboard', status: 'done' },
-      { text: 'Add dark mode support', status: 'todo' }
-    ]
-  }
-]
+<Vigilo
+  category="development"
+  categories={categories}
+  themeOverrides={{
+    colors: {
+      primary: '#10b981',           // Connector line color
+      bgPanel: 'bg-zinc-900/80',    // Semi-transparent panel
+    },
+  }}
+  stylesOverrides={{
+    connectorDot: { r: 6 },         // Larger endpoint dots
+  }}
+/>
 ```
 
-### Keyboard Shortcuts
+### Runtime Styling via Settings Panel
 
-- **Alt+K**: Open command palette
-- **'s'**: Open settings menu (individual per instance)
-- **Arrow Keys**: Navigate between items
-- **Enter**: Select/complete task
-- **Backspace**: Go back from task selection
-- **Escape**: Close modals
+Users can adjust these settings by pressing **'s'** on the overlay:
+- **Line Opacity** (0-100%)
+- **Component Opacity** (10-100%)
+- **Line Color** (color picker)
+- **Toggle Lines** on/off
+- **Toggle Badges** on/off
+
+## Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `s` | Open settings menu |
+| `?` | Show keyboard help |
+| `/` | Focus search |
+| `l` | Toggle connector lines |
+| `b` | Toggle action badges |
+| `Escape` | Close modals |
+| `Alt+K` | Open command palette |
 
 ## Next Steps
 
 - [React Integration](/react-integration) - Detailed React setup guide
-- [Vue Integration](/vue-integration) - Detailed Vue setup guide
-- [Configuration Options](/configuration) - Advanced customization options
-- [API Reference](/api) - Complete API documentation
+- [Configuration Options](/configuration) - Advanced customization
+- [API Reference](/api-reference) - Complete API documentation

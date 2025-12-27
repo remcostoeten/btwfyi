@@ -11,5 +11,5 @@ export default defineConfig({
   clean: true,
   treeshake: true,
   minify: false,
-  external: ['react', 'react-dom', '@remcostoeten/vigilo-core'],
+  external: ['react', 'react-dom', 'btwfyi-core'],
 })

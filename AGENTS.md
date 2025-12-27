@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-Source lives in `src`, split between `src/core` for framework-agnostic overlays, `src/react` for React bindings, and `src/index.ts` which re-exports public entry points. Bundled artifacts land in `dist/` via `tsup` and must never be edited manually. Automation utilities (version bumping, release orchestration) live in `scripts/`. Keep any temporary assets inside `tmp/` and remove them before committing. When adding new modules prefer mirroring the existing hierarchy (core implementation plus a React wrapper) so that downstream consumers get consistent import surfaces (`@remcostoeten/vigilo-core`, `@remcostoeten/vigilo-react`, `@remcostoeten/vigilo-vue`). The core must stay framework-neutral TypeScript/JSX so per-framework layers remain as thin as possible—ideally a single wrapper component or hook per framework.
+Source lives in `src`, split between `src/core` for framework-agnostic overlays, `src/react` for React bindings, and `src/index.ts` which re-exports public entry points. Bundled artifacts land in `dist/` via `tsup` and must never be edited manually. Automation utilities (version bumping, release orchestration) live in `scripts/`. Keep any temporary assets inside `tmp/` and remove them before committing. When adding new modules prefer mirroring the existing hierarchy (core implementation plus a React wrapper) so that downstream consumers get consistent import surfaces (`btwfyi-core`, `btwfyi-react`, `btwfyi-vue`). The core must stay framework-neutral TypeScript/JSX so per-framework layers remain as thin as possible—ideally a single wrapper component or hook per framework.
 
 ## Build, Test, and Development Commands
 

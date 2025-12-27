@@ -57,7 +57,7 @@
             stroke-width="2"
             fill="none"
             stroke-dasharray="6 4"
-            :style="{ animation: 'vigilo-dash 30s linear infinite' }"
+            :style="{ animation: 'btwfyi-dash 30s linear infinite' }"
           />
           <circle
             v-if="connectionStart(conn)"
@@ -283,7 +283,7 @@
           <div v-if="displayMode.value === 'full' || displayMode.value === 'compact'" class="relative px-3 pb-2">
             <input
               v-model="searchQuery"
-              data-vigilo-search
+              data-btwfyi-search
               type="text"
               placeholder="Search items... (/)"
               class="w-full px-2 py-1.5 text-xs font-mono bg-zinc-900 border border-zinc-800 rounded text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition-colors"
@@ -383,7 +383,7 @@
     <Teleport v-if="toast" to="body">
       <div
         :class="[
-          'fixed top-4 right-4 z-[10001] px-4 py-3 rounded-lg border shadow-xl font-mono text-sm transition-all vigilo-toast',
+          'fixed top-4 right-4 z-[10001] px-4 py-3 rounded-lg border shadow-xl font-mono text-sm transition-all btwfyi-toast',
           toast.type === 'success'
             ? 'bg-green-500/10 border-green-500/30 text-green-400'
             : toast.type === 'error'
@@ -398,12 +398,12 @@
 
   <!-- Styles -->
   <style>
-    @keyframes vigilo-dash {
+    @keyframes btwfyi-dash {
       to {
         stroke-dashoffset: -100;
       }
     }
-    @keyframes vigilo-toast-in {
+    @keyframes btwfyi-toast-in {
       from {
         opacity: 0;
         transform: translateY(-10px);
@@ -413,7 +413,7 @@
         transform: translateY(0);
       }
     }
-    @keyframes vigilo-toast-out {
+    @keyframes btwfyi-toast-out {
       from {
         opacity: 1;
         transform: translateY(0);
@@ -423,17 +423,17 @@
         transform: translateY(-10px);
       }
     }
-    .vigilo-target-hover {
+    .btwfyi-target-hover {
       outline: 2px solid v-bind('theme.colors.primary') !important;
       outline-offset: 2px;
       background-color: v-bind('theme.colors.primaryDim') !important;
       cursor: crosshair !important;
     }
-    .vigilo-toast {
-      animation: vigilo-toast-in 0.2s ease-out;
+    .btwfyi-toast {
+      animation: btwfyi-toast-in 0.2s ease-out;
     }
-    .vigilo-toast-exit {
-      animation: vigilo-toast-out 0.2s ease-in;
+    .btwfyi-toast-exit {
+      animation: btwfyi-toast-out 0.2s ease-in;
     }
   </style>
 </template>
@@ -725,7 +725,7 @@ function exportConfig() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `vigilo-${instanceKey.value}-${new Date().toISOString().split('T')[0]}.json`
+    a.download = `btwfyi-${instanceKey.value}-${new Date().toISOString().split('T')[0]}.json`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)

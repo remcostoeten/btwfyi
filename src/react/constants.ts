@@ -1,13 +1,13 @@
 /**
  * @module
- * This module contains the constants used by the Vigilo React component.
+ * This module contains the constants used by the Btwfyi React component.
  * These constants include configuration for the panel's appearance and behavior,
  * such as the maximum number of items to display, the undo window duration,
  * and the visual theme of the component.
  */
 
 /**
- * The maximum number of items to display in the Vigilo panel.
+ * The maximum number of items to display in the Btwfyi panel.
  * This constant controls how many items are visible at once, helping to manage
  * the visual complexity of the interface.
  *
@@ -72,7 +72,7 @@ export interface Theme {
 }
 
 /**
- * The base theme for the Vigilo React component.
+ * The base theme for the Btwfyi React component.
  * This object contains the default colors, layout styles, and z-index values.
  * It can be customized to create a different look and feel for the component.
  *
@@ -138,7 +138,7 @@ export interface Styles {
 }
 
 /**
- * The base styles for the Vigilo React component.
+ * The base styles for the Btwfyi React component.
  * This object combines the layout and color definitions from the `baseTheme`
  * to create a complete set of CSS classes for the component.
  */
@@ -161,7 +161,7 @@ export const baseStyles: Styles = {
 }
 
 /**
- * The default theme for the Vigilo React component.
+ * The default theme for the Btwfyi React component.
  * This is an alias for `baseTheme` and is provided for convenience.
  *
  * @type {Theme}
@@ -169,7 +169,7 @@ export const baseStyles: Styles = {
 export const theme: Theme = baseTheme
 
 /**
- * The default styles for the Vigilo React component.
+ * The default styles for the Btwfyi React component.
  * This is an alias for `baseStyles` and is provided for convenience.
  */
 export const styles: Styles = baseStyles

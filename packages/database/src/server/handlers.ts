@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import type { Pos, Connection, DisplayMode, TodoStatus } from '@remcostoeten/vigilo-core'
+import type { Pos, Connection, DisplayMode, TodoStatus } from 'btwfyi-core'
 import type { VigiloPrismaQueries } from './prisma'
 import type { VigiloDrizzleQueries } from './drizzle'
 
@@ -21,16 +21,16 @@ export interface VigiloQueryHandler {
  * Generic Next.js API route handlers for Vigilo state management
  */
 export class VigiloApiHandlers {
-  constructor(private queries: VigiloQueryHandler) {}
+  constructor(private queries: VigiloQueryHandler) { }
 
   /**
-   * GET /api/vigilo/state/[instanceKey]
+   * GET /api/btwfyi/state/[instanceKey]
    * Load complete state for an instance
    */
   async handleLoadState(request: NextRequest, { params }: { params: { instanceKey: string } }) {
     try {
       const state = await this.queries.loadState(params.instanceKey)
-      
+
       if (!state) {
         return NextResponse.json({}, { status: 404 })
       }
@@ -46,7 +46,7 @@ export class VigiloApiHandlers {
   }
 
   /**
-   * POST /api/vigilo/position/[instanceKey]
+   * POST /api/btwfyi/position/[instanceKey]
    * Save panel position
    */
   async handleSavePosition(request: NextRequest, { params }: { params: { instanceKey: string } }) {
@@ -73,7 +73,7 @@ export class VigiloApiHandlers {
   }
 
   /**
-   * POST /api/vigilo/connections/[instanceKey]
+   * POST /api/btwfyi/connections/[instanceKey]
    * Save connections
    */
   async handleSaveConnections(request: NextRequest, { params }: { params: { instanceKey: string } }) {
@@ -100,7 +100,7 @@ export class VigiloApiHandlers {
   }
 
   /**
-   * POST /api/vigilo/display-mode/[instanceKey]
+   * POST /api/btwfyi/display-mode/[instanceKey]
    * Save display mode
    */
   async handleSaveDisplayMode(request: NextRequest, { params }: { params: { instanceKey: string } }) {
@@ -127,7 +127,7 @@ export class VigiloApiHandlers {
   }
 
   /**
-   * POST /api/vigilo/hidden/[instanceKey]
+   * POST /api/btwfyi/hidden/[instanceKey]
    * Save hidden state
    */
   async handleSaveHidden(request: NextRequest, { params }: { params: { instanceKey: string } }) {
@@ -154,7 +154,7 @@ export class VigiloApiHandlers {
   }
 
   /**
-   * POST /api/vigilo/show-lines/[instanceKey]
+   * POST /api/btwfyi/show-lines/[instanceKey]
    * Save show lines setting
    */
   async handleSaveShowLines(request: NextRequest, { params }: { params: { instanceKey: string } }) {
@@ -181,7 +181,7 @@ export class VigiloApiHandlers {
   }
 
   /**
-   * POST /api/vigilo/show-badges/[instanceKey]
+   * POST /api/btwfyi/show-badges/[instanceKey]
    * Save show badges setting
    */
   async handleSaveShowBadges(request: NextRequest, { params }: { params: { instanceKey: string } }) {
@@ -208,7 +208,7 @@ export class VigiloApiHandlers {
   }
 
   /**
-   * POST /api/vigilo/line-color/[instanceKey]
+   * POST /api/btwfyi/line-color/[instanceKey]
    * Save line color
    */
   async handleSaveLineColor(request: NextRequest, { params }: { params: { instanceKey: string } }) {
@@ -235,7 +235,7 @@ export class VigiloApiHandlers {
   }
 
   /**
-   * POST /api/vigilo/line-opacity/[instanceKey]
+   * POST /api/btwfyi/line-opacity/[instanceKey]
    * Save line opacity
    */
   async handleSaveLineOpacity(request: NextRequest, { params }: { params: { instanceKey: string } }) {
@@ -262,7 +262,7 @@ export class VigiloApiHandlers {
   }
 
   /**
-   * POST /api/vigilo/component-opacity/[instanceKey]
+   * POST /api/btwfyi/component-opacity/[instanceKey]
    * Save component opacity
    */
   async handleSaveComponentOpacity(request: NextRequest, { params }: { params: { instanceKey: string } }) {
@@ -289,7 +289,7 @@ export class VigiloApiHandlers {
   }
 
   /**
-   * POST /api/vigilo/statuses/[instanceKey]
+   * POST /api/btwfyi/statuses/[instanceKey]
    * Save task statuses
    */
   async handleSaveStatuses(request: NextRequest, { params }: { params: { instanceKey: string } }) {

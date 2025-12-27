@@ -1,7 +1,7 @@
 import { baseTheme, baseStyles, type Theme } from './constants'
 
 /**
- * User-supplied overrides for Vigilo styling tokens.
+ * User-supplied overrides for Btwfyi styling tokens.
  * This type allows for partial overrides of the base theme,
  * and also supports mode-specific overrides for light and dark themes.
  *

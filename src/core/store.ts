@@ -4,7 +4,7 @@ import type {
   Pos,
   StorageKeys,
   TodoStatus,
-  VigiloState,
+  BtwfyiState,
 } from './types'
 import {
   saveComponentOpacity,
@@ -26,8 +26,8 @@ type PositionOptions = {
   persist?: boolean
 }
 
-export type VigiloStore = {
-  getState: () => VigiloState
+export type BtwfyiStore = {
+  getState: () => BtwfyiState
   subscribe: (listener: Listener) => () => void
   setPosition: (position: Pos, options?: PositionOptions) => void
   setConnections: (connections: Connection[]) => void
@@ -44,12 +44,12 @@ export type VigiloStore = {
 }
 
 /**
- * Creates a lightweight store for Vigilo state that persists via localStorage.
+ * Creates a lightweight store for Btwfyi state that persists via localStorage.
  */
-export function createVigiloStore(
+export function createBtwfyiStore(
   keys: StorageKeys,
-  overrides?: Partial<VigiloState>
-): VigiloStore {
+  overrides?: Partial<BtwfyiState>
+): BtwfyiStore {
   let state = hydrateState(keys, overrides)
 
   const listeners = new Set<Listener>()
@@ -58,12 +58,12 @@ export function createVigiloStore(
     listeners.forEach((listener) => listener())
   }
 
-  function setState(next: VigiloState) {
+  function setState(next: BtwfyiState) {
     state = next
     emit()
   }
 
-  function update(partial: Partial<VigiloState>) {
+  function update(partial: Partial<BtwfyiState>) {
     setState({
       ...state,
       ...partial,

@@ -1,4 +1,4 @@
-import type { VigiloStorage, VigiloState, Pos, Connection, DisplayMode, TodoStatus } from '@remcostoeten/vigilo-core'
+import type { VigiloStorage, VigiloState, Pos, Connection, DisplayMode, TodoStatus } from 'btwfyi-core'
 
 export interface ApiStorageConfig {
   /** Base URL for your API endpoints */
@@ -34,7 +34,7 @@ export interface VigiloApiEndpoints {
  * @example
  * ```tsx
  * const storage = createApiVigiloStorage({
- *   baseUrl: 'https://your-app.com/api/vigilo',
+ *   baseUrl: 'https://your-app.com/api/btwfyi',
  *   instanceId: 'development-tasks',
  *   token: user.authToken
  * })
@@ -96,7 +96,7 @@ export function createApiVigiloStorage(config: ApiStorageConfig): VigiloStorage 
     async loadState(): Promise<Partial<VigiloState>> {
       try {
         const response = await fetchWithTimeout(endpoints.loadState)
-        
+
         if (!response.ok) {
           if (response.status === 404) {
             // No state exists yet, return empty

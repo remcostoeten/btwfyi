@@ -5,10 +5,10 @@ import {
   shallowRef,
   type ShallowRef,
 } from 'vue'
-import { createStorageKeys } from '@remcostoeten/vigilo-core'
-import { createDefaultState } from '@remcostoeten/vigilo-core'
-import { createVigiloStore, type VigiloStore } from '@remcostoeten/vigilo-core'
-import type { VigiloConfig, VigiloState } from '@remcostoeten/vigilo-core'
+import { createStorageKeys } from 'btwfyi-core'
+import { createDefaultState } from 'btwfyi-core'
+import { createVigiloStore, type VigiloStore } from 'btwfyi-core'
+import type { VigiloConfig, VigiloState } from 'btwfyi-core'
 
 export type UseVigiloStoreOptions<CategoryId extends string = string> = VigiloConfig<CategoryId> & {
   overrides?: Partial<VigiloState>

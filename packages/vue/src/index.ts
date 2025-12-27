@@ -1,5 +1,5 @@
-export { useVigiloStore } from './use-vigilo-store'
-export type { UseVigiloStoreOptions, UseVigiloStoreReturn } from './use-vigilo-store'
+export { useVigiloStore } from './use-btwfyi-store'
+export type { UseVigiloStoreOptions, UseVigiloStoreReturn } from './use-btwfyi-store'
 export { VigiloRender } from './VigiloRender'
 export type { VigiloProps, CategoryConfig } from './types'
 export { generateSelector, getElementLabel, isValidSelector } from './dom'

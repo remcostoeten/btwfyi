@@ -8,21 +8,21 @@ Complete database persistence solution for Vigilo overlays. Users can opt-in to 
 
 ```bash
 # For Prisma
-npx vigilo-db --prisma --out prisma/schema.prisma
+npx btwfyi-db --prisma --out prisma/schema.prisma
 
 # For Drizzle
-npx vigilo-db --drizzle --out lib/db/schema.ts
+npx btwfyi-db --drizzle --out lib/db/schema.ts
 
 # For raw SQL
-npx vigilo-db --sql --out db/vigilo.sql
+npx btwfyi-db --sql --out db/btwfyi.sql
 ```
 
 ### 2. Set Up API Routes (Next.js Example)
 
 #### Prisma Setup
 ```typescript
-// app/api/vigilo/state/[instanceKey]/route.ts
-import { createVigiloApiHandlers, createVigiloPrismaQueries } from '@vigilo/database'
+// app/api/btwfyi/state/[instanceKey]/route.ts
+import { createVigiloApiHandlers, createVigiloPrismaQueries } from '@btwfyi/database'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
@@ -47,8 +47,8 @@ export async function POST(request, { params }) {
 
 #### Drizzle Setup
 ```typescript
-// app/api/vigilo/state/[instanceKey]/route.ts
-import { createVigiloApiHandlers, createVigiloDrizzleQueries } from '@vigilo/database'
+// app/api/btwfyi/state/[instanceKey]/route.ts
+import { createVigiloApiHandlers, createVigiloDrizzleQueries } from '@btwfyi/database'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import * as schema from '@/lib/db/schema'
@@ -64,13 +64,13 @@ const handlers = createVigiloApiHandlers(queries)
 ```tsx
 'use client'
 
-import { VigiloProvider } from '@vigilo/database'
-import { Vigilo } from '@remcostoeten/vigilo-react'
+import { VigiloProvider } from '@btwfyi/database'
+import { Vigilo } from 'btwfyi-react'
 
 export default function App() {
   return (
     <VigiloProvider
-      baseUrl="/api/vigilo"
+      baseUrl="/api/btwfyi"
       defaultInstanceId="user-tasks"
       getAuthToken={() => localStorage.getItem('token')}
     >
@@ -107,7 +107,7 @@ The generated schema includes:
 
 ## API Endpoints
 
-All endpoints follow the pattern: `/api/vigilo/[resource]/[instanceKey]`
+All endpoints follow the pattern: `/api/btwfyi/[resource]/[instanceKey]`
 
 - `GET /state/[instanceKey]` - Load complete state
 - `POST /position/[instanceKey]` - Save panel position
@@ -126,10 +126,10 @@ All endpoints follow the pattern: `/api/vigilo/[resource]/[instanceKey]`
 ### Custom Storage Adapter
 
 ```typescript
-import { createApiVigiloStorage } from '@vigilo/database'
+import { createApiVigiloStorage } from '@btwfyi/database'
 
 const storage = createApiVigiloStorage({
-  baseUrl: 'https://your-api.com/vigilo',
+  baseUrl: 'https://your-api.com/btwfyi',
   instanceId: 'project-tasks',
   token: user.authToken,
   headers: { 'X-Custom-Header': 'value' },
@@ -143,23 +143,23 @@ const storage = createApiVigiloStorage({
 
 ```typescript
 // server/trpc/router.ts
-import { createVigiloRouter } from '@vigilo/database'
-import { createVigiloPrismaQueries } from '@vigilo/database'
+import { createVigiloRouter } from '@btwfyi/database'
+import { createVigiloPrismaQueries } from '@btwfyi/database'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 const queries = createVigiloPrismaQueries(prisma)
-export const vigiloRouter = createVigiloRouter(queries)
+export const btwfyiRouter = createVigiloRouter(queries)
 
 // client
 import { trpc } from '@/lib/trpc'
-const { data } = trpc.vigilo.getState.useQuery({ instanceKey: 'my-app' })
+const { data } = trpc.btwfyi.getState.useQuery({ instanceKey: 'my-app' })
 ```
 
 ### Manual Storage Hook
 
 ```typescript
-import { useVigiloStorage } from '@vigilo/database'
+import { useVigiloStorage } from '@btwfyi/database'
 
 function MyComponent() {
   const { getStorage, isAuthenticated } = useVigiloStorage()
@@ -201,7 +201,7 @@ Simply replace the `storage` prop:
 <Vigilo category="dev" categories={categories} />
 
 // After (with provider)
-<VigiloProvider baseUrl="/api/vigilo" defaultInstanceId="dev">
+<VigiloProvider baseUrl="/api/btwfyi" defaultInstanceId="dev">
   <Vigilo category="dev" categories={categories} />
 </VigiloProvider>
 

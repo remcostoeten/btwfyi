@@ -6,13 +6,14 @@ export type Pos = {
 
 export type TodoStatus = 'todo' | 'working' | 'done'
 
-/** Individual task metadata surfaced inside Vigilo */
+/** Individual task metadata surfaced inside Btwfyi */
 export type TodoItem = {
   text: string
   action?: string
   info?: string
   description?: string
   notes?: string
+  dueDate?: string | Date
   priority?: 'low' | 'medium' | 'high'
   tags?: string[]
   createdAt?: string
@@ -41,7 +42,7 @@ export type UndoSnapshot = {
 }
 
 /** Config shared between core and React entry points */
-export type VigiloConfig<CategoryId extends string = string> = {
+export type BtwfyiConfig<CategoryId extends string = string> = {
   category: CategoryId
   instanceId?: string
 }
@@ -60,7 +61,7 @@ export type StorageKeys = {
   statuses: string
 }
 
-export type VigiloState = {
+export type BtwfyiState = {
   position: Pos
   connections: Connection[]
   displayMode: DisplayMode

@@ -73,8 +73,8 @@
 </template>
 
 <script setup lang="ts">
-import { VigiloRender } from '@remcostoeten/vigilo/vue'
-import type { CategoryConfig } from '@remcostoeten/vigilo/vue'
+import { VigiloRender } from 'btwfyi/vue'
+import type { CategoryConfig } from 'btwfyi/vue'
 
 const categories: readonly CategoryConfig[] = [
   {

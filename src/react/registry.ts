@@ -12,7 +12,7 @@ export type PaletteTaskSnapshot = {
   clearConnection?: () => void
 }
 
-/** Aggregated data for each mounted Vigilo instance. */
+/** Aggregated data for each mounted Btwfyi instance. */
 export type PaletteInstanceSnapshot = {
   instanceKey: string
   categoryId: string

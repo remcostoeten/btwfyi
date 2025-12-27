@@ -1,9 +1,9 @@
-import type { StorageKeys, VigiloState, DisplayMode, TodoStatus } from './types'
+import type { StorageKeys, BtwfyiState, DisplayMode, TodoStatus } from './types'
 
 /**
  * The prefix for the localStorage keys.
  */
-const STORAGE_PREFIX = 'vigilo-state-'
+const STORAGE_PREFIX = 'btwfyi-state-'
 
 /**
  * Creates namespaced localStorage keys to isolate multiple overlays per page.
@@ -27,8 +27,8 @@ export function createStorageKeys(instanceKey: string): StorageKeys {
 /**
  * Reads persisted overlay state, ignoring malformed payloads defensively.
  */
-export function loadState(keys: StorageKeys): Partial<VigiloState> {
-  const state: Partial<VigiloState> = {}
+export function loadState(keys: StorageKeys): Partial<BtwfyiState> {
+  const state: Partial<BtwfyiState> = {}
 
   try {
     const savedPos = localStorage.getItem(keys.pos)
@@ -147,7 +147,7 @@ export function loadState(keys: StorageKeys): Partial<VigiloState> {
       }
     }
   } catch (e) {
-    console.error('Vigilo storage read error', e)
+    console.error('Btwfyi storage read error', e)
   }
 
   return state
@@ -158,7 +158,7 @@ export function savePosition(keys: StorageKeys, position: { x: number; y: number
   try {
     localStorage.setItem(keys.pos, JSON.stringify(position))
   } catch (e) {
-    console.error('Vigilo position write error', e)
+    console.error('Btwfyi position write error', e)
   }
 }
 
@@ -167,7 +167,7 @@ export function saveConnections(keys: StorageKeys, connections: unknown[]): void
   try {
     localStorage.setItem(keys.con, JSON.stringify(connections))
   } catch (e) {
-    console.error('Vigilo connections write error', e)
+    console.error('Btwfyi connections write error', e)
   }
 }
 
@@ -176,7 +176,7 @@ export function saveDisplayMode(keys: StorageKeys, mode: DisplayMode): void {
   try {
     localStorage.setItem(keys.mode, JSON.stringify(mode))
   } catch (e) {
-    console.error('Vigilo mode write error', e)
+    console.error('Btwfyi mode write error', e)
   }
 }
 
@@ -185,7 +185,7 @@ export function saveHidden(keys: StorageKeys, isHidden: boolean): void {
   try {
     localStorage.setItem(keys.hidden, JSON.stringify(isHidden))
   } catch (e) {
-    console.error('Vigilo hidden write error', e)
+    console.error('Btwfyi hidden write error', e)
   }
 }
 
@@ -194,7 +194,7 @@ export function saveShowLines(keys: StorageKeys, showLines: boolean): void {
   try {
     localStorage.setItem(keys.lines, JSON.stringify(showLines))
   } catch (e) {
-    console.error('Vigilo lines write error', e)
+    console.error('Btwfyi lines write error', e)
   }
 }
 
@@ -203,7 +203,7 @@ export function saveShowBadges(keys: StorageKeys, showBadges: boolean): void {
   try {
     localStorage.setItem(keys.badges, JSON.stringify(showBadges))
   } catch (e) {
-    console.error('Vigilo badges write error', e)
+    console.error('Btwfyi badges write error', e)
   }
 }
 
@@ -212,7 +212,7 @@ export function saveLineColor(keys: StorageKeys, color: string): void {
   try {
     localStorage.setItem(keys.lineColor, JSON.stringify(color))
   } catch (e) {
-    console.error('Vigilo line color write error', e)
+    console.error('Btwfyi line color write error', e)
   }
 }
 
@@ -221,7 +221,7 @@ export function saveLineOpacity(keys: StorageKeys, opacity: number): void {
   try {
     localStorage.setItem(keys.lineOpacity, JSON.stringify(opacity))
   } catch (e) {
-    console.error('Vigilo line opacity write error', e)
+    console.error('Btwfyi line opacity write error', e)
   }
 }
 
@@ -230,7 +230,7 @@ export function saveComponentOpacity(keys: StorageKeys, opacity: number): void {
   try {
     localStorage.setItem(keys.componentOpacity, JSON.stringify(opacity))
   } catch (e) {
-    console.error('Vigilo component opacity write error', e)
+    console.error('Btwfyi component opacity write error', e)
   }
 }
 
@@ -243,6 +243,6 @@ export function saveStatuses(keys: StorageKeys, statuses: Map<number, TodoStatus
     }
     localStorage.setItem(keys.statuses, JSON.stringify(statusObj))
   } catch (e) {
-    console.error('Vigilo status write error', e)
+    console.error('Btwfyi status write error', e)
   }
 }

@@ -1,12 +1,12 @@
 {
-  "name": "@remcostoeten/vigilo",
+  "name": "btwfyi",
   "version": "0.1.0",
-  "description": "A lightweight task awareness overlay for development environments",
+  "description": "Do you suffer from brain rot due to too much TikTok? Can't read your own handwriting? Get servere anxiety from hearing 'Jira', 'Trello' or 'Lane'? With Btwfyi it's impossible to forget your tasks. Does what it must do and nothing else. Even aesthetically pleasing. ",
   "author": "Remco Stoeten",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/remcostoeten/vigilo.git"
+    "url": "git+https://github.com/remcostoeten/btwfyi.git"
   },
   "keywords": [
     "todo",
@@ -80,5 +80,8 @@
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "npm@10.0.0"
+  "packageManager": "npm@10.0.0",
+  "dependencies": {
+    "chrono-node": "^2.9.0"
+  }
 }

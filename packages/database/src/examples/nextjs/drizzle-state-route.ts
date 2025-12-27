@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createVigiloApiHandlers } from '@vigilo/database/server/handlers'
-import { createVigiloDrizzleQueries } from '@vigilo/database/server/drizzle'
+import { createVigiloApiHandlers } from '@btwfyi/database/server/handlers'
+import { createVigiloDrizzleQueries } from '@btwfyi/database/server/drizzle'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import * as schema from '@/lib/db/schema' // User's generated Drizzle schema
@@ -11,7 +11,7 @@ const db = drizzle(client, { schema })
 const queries = createVigiloDrizzleQueries(db)
 const handlers = createVigiloApiHandlers(queries)
 
-// GET /api/vigilo/state/[instanceKey]
+// GET /api/btwfyi/state/[instanceKey]
 export async function GET(
   request: NextRequest,
   { params }: { params: { instanceKey: string } }
@@ -19,7 +19,7 @@ export async function GET(
   return handlers.handleLoadState(request, { params })
 }
 
-// POST /api/vigilo/state/[instanceKey] (for bulk updates)
+// POST /api/btwfyi/state/[instanceKey] (for bulk updates)
 export async function POST(
   request: NextRequest,
   { params }: { params: { instanceKey: string } }

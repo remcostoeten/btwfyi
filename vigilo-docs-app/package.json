@@ -1,5 +1,5 @@
 {
-  "name": "vigilo-docs-app",
+  "name": "btwfyi-docs-app",
   "version": "1.0.0",
   "description": "Interactive documentation for Vigilo",
   "main": "src/index.ts",

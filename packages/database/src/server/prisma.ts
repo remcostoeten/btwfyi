@@ -1,31 +1,31 @@
 import { PrismaClient } from '@prisma/client'
-import type { Pos, Connection, DisplayMode, TodoStatus } from '@remcostoeten/vigilo-core'
+import type { Pos, Connection, DisplayMode, TodoStatus } from 'btwfyi-core'
 
 export interface VigiloPrismaClient {
-  vigiloInstance: {
+  btwfyiInstance: {
     findUnique: (args: any) => Promise<any>
     create: (args: any) => Promise<any>
     upsert: (args: any) => Promise<any>
   }
-  vigiloPosition: {
+  btwfyiPosition: {
     findUnique: (args: any) => Promise<any>
     create: (args: any) => Promise<any>
     update: (args: any) => Promise<any>
     upsert: (args: any) => Promise<any>
   }
-  vigiloConnection: {
+  btwfyiConnection: {
     findMany: (args: any) => Promise<any[]>
     createMany: (args: any) => Promise<any>
     deleteMany: (args: any) => Promise<any>
     upsert: (args: any) => Promise<any>
   }
-  vigiloSettings: {
+  btwfyiSettings: {
     findUnique: (args: any) => Promise<any>
     create: (args: any) => Promise<any>
     update: (args: any) => Promise<any>
     upsert: (args: any) => Promise<any>
   }
-  vigiloStatus: {
+  btwfyiStatus: {
     findMany: (args: any) => Promise<any[]>
     createMany: (args: any) => Promise<any>
     deleteMany: (args: any) => Promise<any>
@@ -34,13 +34,13 @@ export interface VigiloPrismaClient {
 }
 
 export class VigiloPrismaQueries {
-  constructor(private prisma: VigiloPrismaClient) {}
+  constructor(private prisma: VigiloPrismaClient) { }
 
   /**
    * Get or create an instance
    */
   async getOrCreateInstance(instanceKey: string, userId?: string) {
-    return await this.prisma.vigiloInstance.upsert({
+    return await this.prisma.btwfyiInstance.upsert({
       where: { instanceKey },
       update: { updatedAt: new Date() },
       create: { instanceKey, userId }
@@ -51,7 +51,7 @@ export class VigiloPrismaQueries {
    * Load complete state for an instance
    */
   async loadState(instanceKey: string) {
-    const instance = await this.prisma.vigiloInstance.findUnique({
+    const instance = await this.prisma.btwfyiInstance.findUnique({
       where: { instanceKey },
       include: {
         positions: true,
@@ -69,8 +69,8 @@ export class VigiloPrismaQueries {
         todoIndex: conn.todoIndex,
         targetSelector: conn.targetSelector || undefined,
         targetLabel: conn.targetLabel || undefined,
-        targetPosition: (conn.targetPositionX !== null && conn.targetPositionY !== null) 
-          ? { x: conn.targetPositionX, y: conn.targetPositionY } 
+        targetPosition: (conn.targetPositionX !== null && conn.targetPositionY !== null)
+          ? { x: conn.targetPositionX, y: conn.targetPositionY }
           : undefined
       })),
       displayMode: instance.settings[0]?.displayMode as DisplayMode || undefined,
@@ -89,8 +89,8 @@ export class VigiloPrismaQueries {
    */
   async savePosition(instanceKey: string, position: Pos) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
-    return await this.prisma.vigiloPosition.upsert({
+
+    return await this.prisma.btwfyiPosition.upsert({
       where: { instanceId: instance.id },
       update: { x: position.x, y: position.y, updatedAt: new Date() },
       create: { instanceId: instance.id, x: position.x, y: position.y }
@@ -102,15 +102,15 @@ export class VigiloPrismaQueries {
    */
   async saveConnections(instanceKey: string, connections: Connection[]) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
+
     // Delete existing connections
-    await this.prisma.vigiloConnection.deleteMany({
+    await this.prisma.btwfyiConnection.deleteMany({
       where: { instanceId: instance.id }
     })
 
     // Create new connections
     if (connections.length > 0) {
-      await this.prisma.vigiloConnection.createMany({
+      await this.prisma.btwfyiConnection.createMany({
         data: connections.map(conn => ({
           instanceId: instance.id,
           todoIndex: conn.todoIndex,
@@ -130,8 +130,8 @@ export class VigiloPrismaQueries {
    */
   async saveDisplayMode(instanceKey: string, displayMode: DisplayMode) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
-    return await this.prisma.vigiloSettings.upsert({
+
+    return await this.prisma.btwfyiSettings.upsert({
       where: { instanceId: instance.id },
       update: { displayMode, updatedAt: new Date() },
       create: { instanceId: instance.id, displayMode }
@@ -143,8 +143,8 @@ export class VigiloPrismaQueries {
    */
   async saveHidden(instanceKey: string, isHidden: boolean) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
-    return await this.prisma.vigiloSettings.upsert({
+
+    return await this.prisma.btwfyiSettings.upsert({
       where: { instanceId: instance.id },
       update: { isHidden, updatedAt: new Date() },
       create: { instanceId: instance.id, isHidden }
@@ -156,8 +156,8 @@ export class VigiloPrismaQueries {
    */
   async saveShowLines(instanceKey: string, showLines: boolean) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
-    return await this.prisma.vigiloSettings.upsert({
+
+    return await this.prisma.btwfyiSettings.upsert({
       where: { instanceId: instance.id },
       update: { showLines, updatedAt: new Date() },
       create: { instanceId: instance.id, showLines }
@@ -169,8 +169,8 @@ export class VigiloPrismaQueries {
    */
   async saveShowBadges(instanceKey: string, showBadges: boolean) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
-    return await this.prisma.vigiloSettings.upsert({
+
+    return await this.prisma.btwfyiSettings.upsert({
       where: { instanceId: instance.id },
       update: { showBadges, updatedAt: new Date() },
       create: { instanceId: instance.id, showBadges }
@@ -182,8 +182,8 @@ export class VigiloPrismaQueries {
    */
   async saveLineColor(instanceKey: string, lineColor: string) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
-    return await this.prisma.vigiloSettings.upsert({
+
+    return await this.prisma.btwfyiSettings.upsert({
       where: { instanceId: instance.id },
       update: { lineColor, updatedAt: new Date() },
       create: { instanceId: instance.id, lineColor }
@@ -195,8 +195,8 @@ export class VigiloPrismaQueries {
    */
   async saveLineOpacity(instanceKey: string, lineOpacity: number) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
-    return await this.prisma.vigiloSettings.upsert({
+
+    return await this.prisma.btwfyiSettings.upsert({
       where: { instanceId: instance.id },
       update: { lineOpacity, updatedAt: new Date() },
       create: { instanceId: instance.id, lineOpacity }
@@ -208,8 +208,8 @@ export class VigiloPrismaQueries {
    */
   async saveComponentOpacity(instanceKey: string, componentOpacity: number) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
-    return await this.prisma.vigiloSettings.upsert({
+
+    return await this.prisma.btwfyiSettings.upsert({
       where: { instanceId: instance.id },
       update: { componentOpacity, updatedAt: new Date() },
       create: { instanceId: instance.id, componentOpacity }
@@ -221,9 +221,9 @@ export class VigiloPrismaQueries {
    */
   async saveStatuses(instanceKey: string, statuses: Map<number, TodoStatus>) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
+
     // Delete existing statuses
-    await this.prisma.vigiloStatus.deleteMany({
+    await this.prisma.btwfyiStatus.deleteMany({
       where: { instanceId: instance.id }
     })
 
@@ -235,7 +235,7 @@ export class VigiloPrismaQueries {
     }))
 
     if (statusData.length > 0) {
-      await this.prisma.vigiloStatus.createMany({
+      await this.prisma.btwfyiStatus.createMany({
         data: statusData
       })
     }

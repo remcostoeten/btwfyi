@@ -1,5 +1,5 @@
 {
-  "name": "vigilo-vue-example",
+  "name": "btwfyi-vue-example",
   "version": "0.0.1",
   "type": "module",
   "scripts": {
@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "vue": "^3.5.13",
-    "@remcostoeten/vigilo": "file:../.."
+    "btwfyi": "file:../.."
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.0",
@@ -17,5 +17,3 @@
     "typescript": "^5.9.3"
   }
 }
-
-

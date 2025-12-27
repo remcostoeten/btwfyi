@@ -5,16 +5,16 @@ description: Complete API documentation for Vigilo components and hooks
 
 # API Reference
 
-This page documents all available components, hooks, and types in the Vigilo package.
+This page documents all available components, hooks, and types in the Vigilo packages.
 
 ## Core Types
 
 ### Pos
 
-Type for position coordinates.
+Position coordinates for panel placement and freeroam connections.
 
 ```ts
-interface Pos {
+type Pos = {
   x: number
   y: number
 }
@@ -28,15 +28,34 @@ Status enumeration for tasks.
 type TodoStatus = 'todo' | 'working' | 'done'
 ```
 
-### Connection
+### TodoItem
 
-Type for task connections.
+Individual task within a category.
 
 ```ts
-interface Connection {
-  todoIndex: number
-  targetLabel?: string
-  targetPosition?: Pos
+type TodoItem = {
+  text: string                           // Main task text (required)
+  action?: string                        // Short label: 'fix', 'feat', 'perf', etc.
+  info?: string                          // Short info text
+  description?: string                   // Longer description
+  notes?: string                         // Additional notes
+  priority?: 'low' | 'medium' | 'high'   // Priority level
+  tags?: string[]                        // Tags for filtering
+  createdAt?: string                     // ISO 8601 timestamp
+  updatedAt?: string                     // ISO 8601 timestamp
+}
+```
+
+### Connection
+
+Links a task to a DOM element or absolute position.
+
+```ts
+type Connection = {
+  todoIndex: number           // 0-based task index
+  targetSelector?: string     // CSS selector (mutually exclusive with targetPosition)
+  targetLabel?: string        // Display label for the connection
+  targetPosition?: Pos        // Fixed x/y coordinates for "freeroam" connections
 }
 ```
 
@@ -48,6 +67,18 @@ Panel display modes.
 type DisplayMode = 'full' | 'compact' | 'minimal'
 ```
 
+### CategoryConfig
+
+Configuration for task categories.
+
+```ts
+type CategoryConfig = {
+  id: string                  // Unique category identifier
+  displayName?: string        // Human-readable name (falls back to id)
+  items: TodoItem[]           // Array of tasks
+}
+```
+
 ### Theme
 
 Theme configuration object.
@@ -55,40 +86,26 @@ Theme configuration object.
 ```ts
 interface Theme {
   colors: {
-    primary: string
-    primaryDim: string
-    freeroam: string
-    textMain: string
-    textDim: string
-    bgPanel: string
-    borderPanel: string
-    bgOverlay: string
+    primary: string       // Accent color for lines and highlights
+    primaryDim: string    // Dimmed primary for backgrounds
+    freeroam: string      // Freeroam connection color
+    textMain: string      // Main text (Tailwind class or CSS)
+    textDim: string       // Secondary text
+    bgPanel: string       // Panel background
+    borderPanel: string   // Panel border
+    bgOverlay: string     // Overlay background
   }
   layout: {
-    panel: string
-    item: string
-    header: string
-    badge: string
+    panel: string         // Panel CSS classes
+    item: string          // Item CSS classes
+    header: string        // Header CSS classes
+    badge: string         // Badge CSS classes
   }
   z: {
-    lines: number
-    overlay: number
-    panel: number
+    lines: number         // z-index for connector lines (default: 9990)
+    overlay: number       // z-index for overlay (default: 9995)
+    panel: number         // z-index for panel (default: 9999)
   }
-}
-```
-
-### CategoryConfig
-
-Configuration for task categories.
-
-```ts
-interface CategoryConfig {
-  id: string
-  displayName?: string
-  defaultStatus?: TodoStatus
-  allowConnections?: boolean
-  color?: string
 }
 ```
 
@@ -99,13 +116,17 @@ interface CategoryConfig {
 Main component for task awareness overlay.
 
 ```tsx
-interface VigiloProps<TCategories extends readonly CategoryConfig[] = CategoryConfig[]> {
-  category: string
-  instanceId?: string
-  categories: TCategories
-  themeOverrides?: ThemeOverrides
-  stylesOverrides?: Styles
-  colorMode?: 'auto' | 'light' | 'dark'
+import { Vigilo } from 'btwfyi/react'
+
+interface VigiloProps<TCategories extends readonly CategoryConfig[]> {
+  category: string                         // Category ID to display (required)
+  categories: TCategories                  // Array of all categories (required)
+  instanceId?: string                      // Unique instance ID (defaults to category)
+  enabled?: boolean                        // Enable/disable component (default: true)
+  storage?: VigiloStorage                  // Custom storage adapter
+  themeOverrides?: ThemeOverrides          // Theme customization
+  stylesOverrides?: Partial<Styles>        // Style customization
+  colorMode?: 'light' | 'dark'             // Color mode
 }
 ```
 
@@ -114,10 +135,12 @@ interface VigiloProps<TCategories extends readonly CategoryConfig[] = CategoryCo
 Global command palette component.
 
 ```tsx
+import { VigiloCommandPalette } from 'btwfyi/react'
+
 interface VigiloCommandPaletteProps {
-  shortcutKey?: string | null      // Default: 'k'
-  shortcutModifier?: 'alt' | 'ctrl' | 'meta' | 'shift'   // Default: 'alt'
-  disableShortcut?: boolean      // Default: false
+  shortcutKey?: string | null              // Default: 'k'
+  shortcutModifier?: 'alt' | 'ctrl' | 'meta' | 'shift'  // Default: 'alt'
+  disableShortcut?: boolean                // Default: false
 }
 ```
 
@@ -125,35 +148,44 @@ interface VigiloCommandPaletteProps {
 
 ### useVigiloInstance
 
-Hook for creating and managing Vigilo instances.
+Hook for programmatic control of Vigilo instances.
 
 ```tsx
-function useVigiloInstance<TCategories extends readonly CategoryConfig[] = CategoryConfig[]>(
-  props: VigiloProps<TCategories>
-): {
-  connect: (taskId: number, target: Element | string) => void
-  disconnect: (taskId: number) => void
-  focus: (category?: string, taskId?: number) => void
-  focusNext: () => void
-  focusPrevious: () => void
-  toggleDisplay: (mode?: DisplayMode) => void
-  setVisibility: (visible: boolean) => void
-} | null
-```
+import { useVigiloInstance } from 'btwfyi/react'
 
-### useVigiloConnection
+interface UseVigiloInstanceOptions {
+  instanceId: string        // Must match Vigilo category/instanceId
+  lineColor?: string        // Optional line color override
+}
 
-Hook for managing connections between tasks.
-
-```tsx
-function useVigiloConnection(
-  instanceId: string
-): {
-  connect: (taskId: number, target: Element | string) => void
-  disconnect: (taskId: number) => void
-  getConnectedElements: () => Element[]
+interface UseVigiloInstanceReturn {
+  store: VigiloStore | null
+  getState: () => VigiloState | null
+  addConnection: (todoIndex: number, target: string | Element | Pos, label?: string) => void
+  removeConnection: (todoIndex: number) => void
+  setConnections: (connections: Connection[]) => void
   getConnections: () => Connection[]
-} | null
+}
+
+// Usage
+const { addConnection, removeConnection, setConnections } = useVigiloInstance({
+  instanceId: 'development'
+})
+
+// Connect task 0 to a CSS selector
+addConnection(0, '#my-button')
+
+// Connect task 1 to a DOM element
+addConnection(1, document.querySelector('.sidebar'), 'Sidebar')
+
+// Connect task 2 to fixed coordinates
+addConnection(2, { x: 500, y: 300 })
+
+// Set all connections at once
+setConnections([
+  { todoIndex: 0, targetSelector: '#header' },
+  { todoIndex: 1, targetSelector: '.nav' },
+])
 ```
 
 ## Vue Components
@@ -164,59 +196,24 @@ Main Vue component with same props as React version.
 
 ```vue
 <script setup lang="ts">
+import { Vigilo } from 'btwfyi-vue'
+
 interface Props {
   category: string
   instanceId?: string
   categories: CategoryConfig[]
   themeOverrides?: ThemeOverrides
   stylesOverrides?: Styles
-  colorMode?: 'auto' | 'light' | 'dark'
+  colorMode?: 'light' | 'dark'
 }
 </script>
-```
-
-## Vue Composables
-
-### useVigiloStore
-
-Vue composable for state management.
-
-```ts
-function useVigiloStore(
-  instanceKey: string,
-  overrides?: VigiloStateOverrides
-): {
-  state: Ref<VigiloState>
-  addTask: (task: Omit<CreateTask, 'id'>) => void
-  updateTask: (index: number, task: Partial<VigiloTask>) => void
-  deleteTask: (index: number) => void
-  toggleTask: (index: number) => void
-  setLineOpacity: (opacity: number) => void
-  setComponentOpacity: (opacity: number) => void
-  // ... other methods
-}
-```
-
-### useVigiloConnection
-
-Vue composable for connection management.
-
-```ts
-function useVigiloConnection(
-  instanceId: string
-): {
-  connect: (taskId: number, target: Element | string) => void
-  disconnect: (taskId: number) => void
-  getConnectedElements: () => Element[]
-  getConnections: () => Connection[]
-} | null
 ```
 
 ## Constants
 
 ### MAX_VISIBLE_ITEMS
 
-Maximum number of items displayed in panel.
+Maximum number of items displayed in panel (before "show more").
 
 ```ts
 export const MAX_VISIBLE_ITEMS = 3
@@ -237,18 +234,67 @@ export const UNDO_WINDOW_MS = 8000
 Factory function for creating Vigilo store instances.
 
 ```ts
+import { createVigiloStore } from 'btwfyi'
+
 function createVigiloStore(
-  keys: StorageKeys,
-  overrides?: VigiloStateOverrides
+  instanceKey: string,
+  options?: { storage?: VigiloStorage; overrides?: Partial<VigiloState> }
 ): VigiloStore
 ```
 
 ### createStorageKeys
 
-Creates namespaced storage keys for multiple instances.
+Creates namespaced storage keys for localStorage persistence.
 
 ```ts
+import { createStorageKeys } from 'btwfyi'
+
 function createStorageKeys(instanceKey: string): StorageKeys
+```
+
+## Styling API
+
+### Runtime Style Changes
+
+The store exposes methods for runtime styling:
+
+```ts
+const { store } = useVigiloInstance({ instanceId: 'dev' })
+
+// Adjust line opacity (0 to 1)
+store?.setLineOpacity(0.3)
+
+// Adjust component opacity (0.1 to 1)
+store?.setComponentOpacity(0.8)
+
+// Change line color
+store?.setLineColor('#ff6b6b')
+
+// Toggle features
+store?.setShowLines(false)
+store?.setShowBadges(false)
+```
+
+### Styles Override Structure
+
+```ts
+interface Styles {
+  panel: string       // CSS classes for main panel
+  item: string        // CSS classes for items
+  header: string      // CSS classes for header
+  badge: string       // CSS classes for badges
+  connectorDot: {
+    fill: string      // Dot color
+    r: number         // Dot radius
+  }
+  freeroamDot: {
+    fill: string
+    stroke: string
+    strokeWidth: number
+    r: number
+    opacity: number
+  }
+}
 ```
 
 ## Examples

@@ -1,8 +1,8 @@
 'use client'
 
-import { VigiloProvider } from '@vigilo/database/react/provider'
-import { Vigilo } from '@remcostoeten/vigilo-react'
-import type { CategoryConfig } from '@remcostoeten/vigilo-core'
+import { VigiloProvider } from '@btwfyi/database/react/provider'
+import { Vigilo } from 'btwfyi-react'
+import type { CategoryConfig } from 'btwfyi-core'
 
 // Example categories
 const devCategories: CategoryConfig[] = [
@@ -17,7 +17,7 @@ const devCategories: CategoryConfig[] = [
   },
   {
     id: 'design',
-    displayName: 'Design Tasks', 
+    displayName: 'Design Tasks',
     items: [
       { text: 'Update color scheme', action: 'update', priority: 'medium' },
       { text: 'Create new icons', action: 'create', priority: 'low' }
@@ -28,7 +28,7 @@ const devCategories: CategoryConfig[] = [
 export default function MyApp() {
   return (
     <VigiloProvider
-      baseUrl="/api/vigilo"  // Your API base URL
+      baseUrl="/api/btwfyi"  // Your API base URL
       defaultInstanceId="user-dev-tasks"
       getAuthToken={() => {
         // Return current user's auth token
@@ -38,7 +38,7 @@ export default function MyApp() {
       <Vigilo
         category="development"
         categories={devCategories}
-        // Storage is automatically provided by the provider!
+      // Storage is automatically provided by the provider!
       />
     </VigiloProvider>
   )

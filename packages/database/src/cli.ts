@@ -83,7 +83,7 @@ model VigiloStatus {
 const drizzleSchema = `
 import { pgTable, text, integer, timestamp, varchar, boolean, real, unique, index } from 'drizzle-orm/pg-core';
 
-export const vigiloInstance = pgTable('vigilo_instance', {
+export const btwfyiInstance = pgTable('btwfyi_instance', {
   id: text('id').primaryKey(),
   instanceKey: text('instance_key').unique().notNull(),
   userId: text('user_id'),
@@ -91,9 +91,9 @@ export const vigiloInstance = pgTable('vigilo_instance', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-export const vigiloPosition = pgTable('vigilo_position', {
+export const btwfyiPosition = pgTable('btwfyi_position', {
   id: text('id').primaryKey(),
-  instanceId: text('instance_id').notNull().references(() => vigiloInstance.id, { onDelete: 'cascade' }),
+  instanceId: text('instance_id').notNull().references(() => btwfyiInstance.id, { onDelete: 'cascade' }),
   x: integer('x').notNull(),
   y: integer('y').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -102,9 +102,9 @@ export const vigiloPosition = pgTable('vigilo_position', {
   instanceIdIdx: unique().on(table.instanceId),
 }));
 
-export const vigiloConnection = pgTable('vigilo_connection', {
+export const btwfyiConnection = pgTable('btwfyi_connection', {
   id: text('id').primaryKey(),
-  instanceId: text('instance_id').notNull().references(() => vigiloInstance.id, { onDelete: 'cascade' }),
+  instanceId: text('instance_id').notNull().references(() => btwfyiInstance.id, { onDelete: 'cascade' }),
   todoIndex: integer('todo_index').notNull(),
   targetSelector: text('target_selector'),
   targetLabel: text('target_label'),
@@ -116,9 +116,9 @@ export const vigiloConnection = pgTable('vigilo_connection', {
   instanceTodoIdx: unique().on(table.instanceId, table.todoIndex),
 }));
 
-export const vigiloSettings = pgTable('vigilo_settings', {
+export const btwfyiSettings = pgTable('btwfyi_settings', {
   id: text('id').primaryKey(),
-  instanceId: text('instance_id').notNull().references(() => vigiloInstance.id, { onDelete: 'cascade' }),
+  instanceId: text('instance_id').notNull().references(() => btwfyiInstance.id, { onDelete: 'cascade' }),
   displayMode: varchar('display_mode', { length: 50 }).default('full').notNull(),
   isHidden: boolean('is_hidden').default(false).notNull(),
   showLines: boolean('show_lines').default(true).notNull(),
@@ -132,9 +132,9 @@ export const vigiloSettings = pgTable('vigilo_settings', {
   instanceIdIdx: unique().on(table.instanceId),
 }));
 
-export const vigiloStatus = pgTable('vigilo_status', {
+export const btwfyiStatus = pgTable('btwfyi_status', {
   id: text('id').primaryKey(),
-  instanceId: text('instance_id').notNull().references(() => vigiloInstance.id, { onDelete: 'cascade' }),
+  instanceId: text('instance_id').notNull().references(() => btwfyiInstance.id, { onDelete: 'cascade' }),
   todoIndex: integer('todo_index').notNull(),
   status: varchar('status', { length: 20 }).default('todo').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -145,7 +145,7 @@ export const vigiloStatus = pgTable('vigilo_status', {
 `;
 
 const sqlSchema = `
-CREATE TABLE vigilo_instance (
+CREATE TABLE btwfyi_instance (
     id VARCHAR(255) PRIMARY KEY,
     instance_key VARCHAR(255) UNIQUE NOT NULL,
     user_id VARCHAR(255),
@@ -153,18 +153,18 @@ CREATE TABLE vigilo_instance (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
-CREATE TABLE vigilo_position (
+CREATE TABLE btwfyi_position (
     id VARCHAR(255) PRIMARY KEY,
     instance_id VARCHAR(255) NOT NULL,
     x INT NOT NULL,
     y INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    FOREIGN KEY (instance_id) REFERENCES vigilo_instance(id) ON DELETE CASCADE,
+    FOREIGN KEY (instance_id) REFERENCES btwfyi_instance(id) ON DELETE CASCADE,
     UNIQUE (instance_id)
 );
 
-CREATE TABLE vigilo_connection (
+CREATE TABLE btwfyi_connection (
     id VARCHAR(255) PRIMARY KEY,
     instance_id VARCHAR(255) NOT NULL,
     todo_index INT NOT NULL,
@@ -174,11 +174,11 @@ CREATE TABLE vigilo_connection (
     target_position_y INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    FOREIGN KEY (instance_id) REFERENCES vigilo_instance(id) ON DELETE CASCADE,
+    FOREIGN KEY (instance_id) REFERENCES btwfyi_instance(id) ON DELETE CASCADE,
     UNIQUE (instance_id, todo_index)
 );
 
-CREATE TABLE vigilo_settings (
+CREATE TABLE btwfyi_settings (
     id VARCHAR(255) PRIMARY KEY,
     instance_id VARCHAR(255) NOT NULL,
     display_mode VARCHAR(50) DEFAULT 'full' NOT NULL,
@@ -190,25 +190,25 @@ CREATE TABLE vigilo_settings (
     component_opacity REAL DEFAULT 1.0 NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    FOREIGN KEY (instance_id) REFERENCES vigilo_instance(id) ON DELETE CASCADE,
+    FOREIGN KEY (instance_id) REFERENCES btwfyi_instance(id) ON DELETE CASCADE,
     UNIQUE (instance_id)
 );
 
-CREATE TABLE vigilo_status (
+CREATE TABLE btwfyi_status (
     id VARCHAR(255) PRIMARY KEY,
     instance_id VARCHAR(255) NOT NULL,
     todo_index INT NOT NULL,
     status VARCHAR(20) DEFAULT 'todo' NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    FOREIGN KEY (instance_id) REFERENCES vigilo_instance(id) ON DELETE CASCADE,
+    FOREIGN KEY (instance_id) REFERENCES btwfyi_instance(id) ON DELETE CASCADE,
     UNIQUE (instance_id, todo_index)
 );
 `;
 
 
 program
-  .name('vigilo-db')
+  .name('btwfyi-db')
   .description('CLI to generate database schemas for Vigilo')
   .option('--prisma', 'Generate schema for Prisma')
   .option('--drizzle', 'Generate schema for Drizzle')
@@ -228,28 +228,28 @@ program
     let orm: 'prisma' | 'drizzle' | 'sql' | undefined = undefined;
 
     if (prisma) {
-        schema = prismaSchema;
-        orm = 'prisma';
+      schema = prismaSchema;
+      orm = 'prisma';
     }
     if (drizzle) {
-        schema = drizzleSchema;
-        orm = 'drizzle';
+      schema = drizzleSchema;
+      orm = 'drizzle';
     }
     if (sql) {
-        schema = sqlSchema;
-        orm = 'sql'
+      schema = sqlSchema;
+      orm = 'sql'
     }
 
     if (out) {
-        try {
-            await fs.writeFile(out, schema.trim());
-            console.log(`Schema for ${orm} written to ${out}`);
-        } catch (error) {
-            console.error(`Error writing file to ${out}:`, error);
-            process.exit(1);
-        }
+      try {
+        await fs.writeFile(out, schema.trim());
+        console.log(`Schema for ${orm} written to ${out}`);
+      } catch (error) {
+        console.error(`Error writing file to ${out}:`, error);
+        process.exit(1);
+      }
     } else {
-        console.log(schema.trim());
+      console.log(schema.trim());
     }
   });
 

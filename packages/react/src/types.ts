@@ -1,4 +1,4 @@
-import type { CategoryConfig, VigiloConfig, VigiloStorage } from '@remcostoeten/vigilo-core'
+import type { CategoryConfig, VigiloConfig, VigiloStorage } from 'btwfyi-core'
 import type { baseTheme, baseStyles } from './constants'
 
 export type { CategoryConfig, VigiloConfig }

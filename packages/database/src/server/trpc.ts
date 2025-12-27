@@ -1,6 +1,6 @@
 import { initTRPC } from '@trpc/server'
 import { z } from 'zod'
-import type { Pos, Connection, DisplayMode, TodoStatus } from '@remcostoeten/vigilo-core'
+import type { Pos, Connection, DisplayMode, TodoStatus } from 'btwfyi-core'
 import type { VigiloPrismaQueries } from '../server/prisma'
 import type { VigiloDrizzleQueries } from '../server/drizzle'
 

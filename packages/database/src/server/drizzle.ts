@@ -1,15 +1,15 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { eq, and } from 'drizzle-orm'
-import type { Pos, Connection, DisplayMode, TodoStatus } from '@remcostoeten/vigilo-core'
+import type { Pos, Connection, DisplayMode, TodoStatus } from 'btwfyi-core'
 
 // Import the generated schema (users need to generate this with our CLI)
 import {
-  vigiloInstance,
-  vigiloPosition,
-  vigiloConnection,
-  vigiloSettings,
-  vigiloStatus
+  btwfyiInstance,
+  btwfyiPosition,
+  btwfyiConnection,
+  btwfyiSettings,
+  btwfyiStatus
 } from './drizzle-schema' // Users will import their generated schema
 
 export interface VigiloDrizzleDB {
@@ -22,25 +22,25 @@ export interface VigiloDrizzleDB {
 }
 
 export class VigiloDrizzleQueries {
-  constructor(private db: VigiloDrizzleDB) {}
+  constructor(private db: VigiloDrizzleDB) { }
 
   /**
    * Get or create an instance
    */
   async getOrCreateInstance(instanceKey: string, userId?: string) {
-    const existing = await this.db.select().from(vigiloInstance).where(eq(vigiloInstance.instanceKey, instanceKey)).limit(1)
-    
+    const existing = await this.db.select().from(btwfyiInstance).where(eq(btwfyiInstance.instanceKey, instanceKey)).limit(1)
+
     if (existing.length > 0) {
       return existing[0]
     }
 
-    const inserted = await this.db.insert(vigiloInstance).values({
+    const inserted = await this.db.insert(btwfyiInstance).values({
       instanceKey,
       userId,
       createdAt: new Date(),
       updatedAt: new Date()
     }).returning()
-    
+
     return inserted[0]
   }
 
@@ -48,17 +48,17 @@ export class VigiloDrizzleQueries {
    * Load complete state for an instance
    */
   async loadState(instanceKey: string) {
-    const instance = await this.db.select().from(vigiloInstance).where(eq(vigiloInstance.instanceKey, instanceKey)).limit(1)
-    
+    const instance = await this.db.select().from(btwfyiInstance).where(eq(btwfyiInstance.instanceKey, instanceKey)).limit(1)
+
     if (instance.length === 0) return null
 
     const instanceId = instance[0].id
 
     const [positions, connections, settings, statuses] = await Promise.all([
-      this.db.select().from(vigiloPosition).where(eq(vigiloPosition.instanceId, instanceId)),
-      this.db.select().from(vigiloConnection).where(eq(vigiloConnection.instanceId, instanceId)),
-      this.db.select().from(vigiloSettings).where(eq(vigiloSettings.instanceId, instanceId)),
-      this.db.select().from(vigiloStatus).where(eq(vigiloStatus.instanceId, instanceId))
+      this.db.select().from(btwfyiPosition).where(eq(btwfyiPosition.instanceId, instanceId)),
+      this.db.select().from(btwfyiConnection).where(eq(btwfyiConnection.instanceId, instanceId)),
+      this.db.select().from(btwfyiSettings).where(eq(btwfyiSettings.instanceId, instanceId)),
+      this.db.select().from(btwfyiStatus).where(eq(btwfyiStatus.instanceId, instanceId))
     ])
 
     return {
@@ -67,8 +67,8 @@ export class VigiloDrizzleQueries {
         todoIndex: conn.todoIndex,
         targetSelector: conn.targetSelector || undefined,
         targetLabel: conn.targetLabel || undefined,
-        targetPosition: (conn.targetPositionX !== null && conn.targetPositionY !== null) 
-          ? { x: conn.targetPositionX, y: conn.targetPositionY } 
+        targetPosition: (conn.targetPositionX !== null && conn.targetPositionY !== null)
+          ? { x: conn.targetPositionX, y: conn.targetPositionY }
           : undefined
       })),
       displayMode: settings[0]?.displayMode as DisplayMode || undefined,
@@ -87,15 +87,15 @@ export class VigiloDrizzleQueries {
    */
   async savePosition(instanceKey: string, position: Pos) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
-    const existing = await this.db.select().from(vigiloPosition).where(eq(vigiloPosition.instanceId, instance.id)).limit(1)
-    
+
+    const existing = await this.db.select().from(btwfyiPosition).where(eq(btwfyiPosition.instanceId, instance.id)).limit(1)
+
     if (existing.length > 0) {
-      await this.db.update(vigiloPosition)
+      await this.db.update(btwfyiPosition)
         .set({ x: position.x, y: position.y, updatedAt: new Date() })
-        .where(eq(vigiloPosition.instanceId, instance.id))
+        .where(eq(btwfyiPosition.instanceId, instance.id))
     } else {
-      await this.db.insert(vigiloPosition).values({
+      await this.db.insert(btwfyiPosition).values({
         id: crypto.randomUUID(),
         instanceId: instance.id,
         x: position.x,
@@ -113,13 +113,13 @@ export class VigiloDrizzleQueries {
    */
   async saveConnections(instanceKey: string, connections: Connection[]) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
+
     // Delete existing connections
-    await this.db.delete(vigiloConnection).where(eq(vigiloConnection.instanceId, instance.id))
+    await this.db.delete(btwfyiConnection).where(eq(btwfyiConnection.instanceId, instance.id))
 
     // Insert new connections
     if (connections.length > 0) {
-      await this.db.insert(vigiloConnection).values(
+      await this.db.insert(btwfyiConnection).values(
         connections.map(conn => ({
           id: crypto.randomUUID(),
           instanceId: instance.id,
@@ -142,15 +142,15 @@ export class VigiloDrizzleQueries {
    */
   async saveDisplayMode(instanceKey: string, displayMode: DisplayMode) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
-    const existing = await this.db.select().from(vigiloSettings).where(eq(vigiloSettings.instanceId, instance.id)).limit(1)
-    
+
+    const existing = await this.db.select().from(btwfyiSettings).where(eq(btwfyiSettings.instanceId, instance.id)).limit(1)
+
     if (existing.length > 0) {
-      await this.db.update(vigiloSettings)
+      await this.db.update(btwfyiSettings)
         .set({ displayMode, updatedAt: new Date() })
-        .where(eq(vigiloSettings.instanceId, instance.id))
+        .where(eq(btwfyiSettings.instanceId, instance.id))
     } else {
-      await this.db.insert(vigiloSettings).values({
+      await this.db.insert(btwfyiSettings).values({
         id: crypto.randomUUID(),
         instanceId: instance.id,
         displayMode,
@@ -173,15 +173,15 @@ export class VigiloDrizzleQueries {
    */
   async saveHidden(instanceKey: string, isHidden: boolean) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
-    const existing = await this.db.select().from(vigiloSettings).where(eq(vigiloSettings.instanceId, instance.id)).limit(1)
-    
+
+    const existing = await this.db.select().from(btwfyiSettings).where(eq(btwfyiSettings.instanceId, instance.id)).limit(1)
+
     if (existing.length > 0) {
-      await this.db.update(vigiloSettings)
+      await this.db.update(btwfyiSettings)
         .set({ isHidden, updatedAt: new Date() })
-        .where(eq(vigiloSettings.instanceId, instance.id))
+        .where(eq(btwfyiSettings.instanceId, instance.id))
     } else {
-      await this.db.insert(vigiloSettings).values({
+      await this.db.insert(btwfyiSettings).values({
         id: crypto.randomUUID(),
         instanceId: instance.id,
         displayMode: 'full',
@@ -204,15 +204,15 @@ export class VigiloDrizzleQueries {
    */
   async saveShowLines(instanceKey: string, showLines: boolean) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
-    const existing = await this.db.select().from(vigiloSettings).where(eq(vigiloSettings.instanceId, instance.id)).limit(1)
-    
+
+    const existing = await this.db.select().from(btwfyiSettings).where(eq(btwfyiSettings.instanceId, instance.id)).limit(1)
+
     if (existing.length > 0) {
-      await this.db.update(vigiloSettings)
+      await this.db.update(btwfyiSettings)
         .set({ showLines, updatedAt: new Date() })
-        .where(eq(vigiloSettings.instanceId, instance.id))
+        .where(eq(btwfyiSettings.instanceId, instance.id))
     } else {
-      await this.db.insert(vigiloSettings).values({
+      await this.db.insert(btwfyiSettings).values({
         id: crypto.randomUUID(),
         instanceId: instance.id,
         displayMode: 'full',
@@ -235,15 +235,15 @@ export class VigiloDrizzleQueries {
    */
   async saveShowBadges(instanceKey: string, showBadges: boolean) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
-    const existing = await this.db.select().from(vigiloSettings).where(eq(vigiloSettings.instanceId, instance.id)).limit(1)
-    
+
+    const existing = await this.db.select().from(btwfyiSettings).where(eq(btwfyiSettings.instanceId, instance.id)).limit(1)
+
     if (existing.length > 0) {
-      await this.db.update(vigiloSettings)
+      await this.db.update(btwfyiSettings)
         .set({ showBadges, updatedAt: new Date() })
-        .where(eq(vigiloSettings.instanceId, instance.id))
+        .where(eq(btwfyiSettings.instanceId, instance.id))
     } else {
-      await this.db.insert(vigiloSettings).values({
+      await this.db.insert(btwfyiSettings).values({
         id: crypto.randomUUID(),
         instanceId: instance.id,
         displayMode: 'full',
@@ -266,15 +266,15 @@ export class VigiloDrizzleQueries {
    */
   async saveLineColor(instanceKey: string, lineColor: string) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
-    const existing = await this.db.select().from(vigiloSettings).where(eq(vigiloSettings.instanceId, instance.id)).limit(1)
-    
+
+    const existing = await this.db.select().from(btwfyiSettings).where(eq(btwfyiSettings.instanceId, instance.id)).limit(1)
+
     if (existing.length > 0) {
-      await this.db.update(vigiloSettings)
+      await this.db.update(btwfyiSettings)
         .set({ lineColor, updatedAt: new Date() })
-        .where(eq(vigiloSettings.instanceId, instance.id))
+        .where(eq(btwfyiSettings.instanceId, instance.id))
     } else {
-      await this.db.insert(vigiloSettings).values({
+      await this.db.insert(btwfyiSettings).values({
         id: crypto.randomUUID(),
         instanceId: instance.id,
         displayMode: 'full',
@@ -297,15 +297,15 @@ export class VigiloDrizzleQueries {
    */
   async saveLineOpacity(instanceKey: string, lineOpacity: number) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
-    const existing = await this.db.select().from(vigiloSettings).where(eq(vigiloSettings.instanceId, instance.id)).limit(1)
-    
+
+    const existing = await this.db.select().from(btwfyiSettings).where(eq(btwfyiSettings.instanceId, instance.id)).limit(1)
+
     if (existing.length > 0) {
-      await this.db.update(vigiloSettings)
+      await this.db.update(btwfyiSettings)
         .set({ lineOpacity, updatedAt: new Date() })
-        .where(eq(vigiloSettings.instanceId, instance.id))
+        .where(eq(btwfyiSettings.instanceId, instance.id))
     } else {
-      await this.db.insert(vigiloSettings).values({
+      await this.db.insert(btwfyiSettings).values({
         id: crypto.randomUUID(),
         instanceId: instance.id,
         displayMode: 'full',
@@ -328,15 +328,15 @@ export class VigiloDrizzleQueries {
    */
   async saveComponentOpacity(instanceKey: string, componentOpacity: number) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
-    const existing = await this.db.select().from(vigiloSettings).where(eq(vigiloSettings.instanceId, instance.id)).limit(1)
-    
+
+    const existing = await this.db.select().from(btwfyiSettings).where(eq(btwfyiSettings.instanceId, instance.id)).limit(1)
+
     if (existing.length > 0) {
-      await this.db.update(vigiloSettings)
+      await this.db.update(btwfyiSettings)
         .set({ componentOpacity, updatedAt: new Date() })
-        .where(eq(vigiloSettings.instanceId, instance.id))
+        .where(eq(btwfyiSettings.instanceId, instance.id))
     } else {
-      await this.db.insert(vigiloSettings).values({
+      await this.db.insert(btwfyiSettings).values({
         id: crypto.randomUUID(),
         instanceId: instance.id,
         displayMode: 'full',
@@ -359,9 +359,9 @@ export class VigiloDrizzleQueries {
    */
   async saveStatuses(instanceKey: string, statuses: Map<number, TodoStatus>) {
     const instance = await this.getOrCreateInstance(instanceKey)
-    
+
     // Delete existing statuses
-    await this.db.delete(vigiloStatus).where(eq(vigiloStatus.instanceId, instance.id))
+    await this.db.delete(btwfyiStatus).where(eq(btwfyiStatus.instanceId, instance.id))
 
     // Insert new statuses
     const statusData = Array.from(statuses.entries()).map(([todoIndex, status]) => ({
@@ -374,7 +374,7 @@ export class VigiloDrizzleQueries {
     }))
 
     if (statusData.length > 0) {
-      await this.db.insert(vigiloStatus).values(statusData)
+      await this.db.insert(btwfyiStatus).values(statusData)
     }
 
     return true

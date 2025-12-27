@@ -12,6 +12,7 @@ import {
   type PaletteInstanceSnapshot,
   type PaletteTaskSnapshot,
 } from './registry'
+import { parseSmartSyntax } from '../core/smart-syntax'
 
 function isEditableElement(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false
@@ -24,7 +25,7 @@ function isEditableElement(target: EventTarget | null) {
   return editable
 }
 
-export interface VigiloCommandPaletteProps {
+export interface BtwfyiCommandPaletteProps {
   /**
    * The key to use for the keyboard shortcut (default: 'k').
    * Set to null to disable the keyboard shortcut entirely.
@@ -37,20 +38,22 @@ export interface VigiloCommandPaletteProps {
   shortcutModifier?: 'alt' | 'ctrl' | 'meta' | 'shift'
   /**
    * Whether to disable the keyboard shortcut entirely (default: false).
-   * If true, only the "vigilo" typed sequence will open the palette.
+   * If true, only the "btwfyi" typed sequence will open the palette.
    */
   disableShortcut?: boolean
+  onTaskCreate?: (task: { text: string; dueDate?: Date; tags: string[]; priority?: 'low' | 'medium' | 'high' }) => void
 }
 
 /**
- * Global command palette that surfaces all Vigilo tasks across an application.
- * Opens via Alt + K (configurable) or by typing "vigilo" in sequence.
+ * Global command palette that surfaces all Btwfyi tasks across an application.
+ * Opens via Alt + K (configurable) or by typing "btwfyi" in sequence.
  */
-export function VigiloCommandPalette({
+export function BtwfyiCommandPalette({
   shortcutKey = 'k',
   shortcutModifier = 'alt',
   disableShortcut = false,
-}: VigiloCommandPaletteProps = {}) {
+  onTaskCreate,
+}: BtwfyiCommandPaletteProps = {}) {
   const [isMounted, setIsMounted] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -89,7 +92,7 @@ export function VigiloCommandPalette({
     setSelectedIndex(null)
   }, [])
 
-  const managementMode = query.trim().toLowerCase() === 'vigilo'
+  const managementMode = query.trim().toLowerCase() === 'btwfyi'
 
   const tasks = useMemo(() => {
     return instances.flatMap((instance) =>
@@ -130,14 +133,14 @@ export function VigiloCommandPalette({
 
       const key = e.key.toLowerCase()
       const targetKey = shortcutKey?.toLowerCase() ?? ''
-      
+
       // Check if the configured shortcut is pressed
       const modifierPressed =
         (shortcutModifier === 'alt' && e.altKey) ||
         (shortcutModifier === 'ctrl' && e.ctrlKey) ||
         (shortcutModifier === 'meta' && e.metaKey) ||
         (shortcutModifier === 'shift' && e.shiftKey)
-      
+
       const isShortcutPressed = modifierPressed && key === targetKey
       if (isShortcutPressed) {
         e.preventDefault()
@@ -147,8 +150,8 @@ export function VigiloCommandPalette({
 
       if (!isOpen && e.key.length === 1 && /^[a-zA-Z]$/.test(e.key)) {
         typedRef.current = (typedRef.current + key).slice(-6)
-        if (typedRef.current.endsWith('vigilo')) {
-          openPalette('vigilo')
+        if (typedRef.current.endsWith('btwfyi')) {
+          openPalette('btwfyi')
           typedRef.current = ''
           e.preventDefault()
         }
@@ -237,7 +240,7 @@ export function VigiloCommandPalette({
       className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-sm flex items-start justify-center pt-24"
       role="dialog"
       aria-modal="true"
-      aria-label="Vigilo command palette"
+      aria-label="Btwfyi command palette"
       onClick={(e) => {
         // Close when clicking backdrop
         if (e.target === e.currentTarget) {
@@ -250,23 +253,43 @@ export function VigiloCommandPalette({
           <div className="flex items-center gap-3">
             <input
               ref={inputRef}
+              onPaste={(e) => {
+                const text = e.clipboardData.getData('text')
+                if (!onTaskCreate || !text.includes('\n')) return
+
+                // Check for markdown list items (unordered or ordered)
+                const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
+                const isList = lines.every(l => /^(\s*[-*]|\s*\d+\.)\s/.test(l))
+
+                if (isList) {
+                  e.preventDefault()
+                  lines.forEach(line => {
+                    // Remove list markers
+                    const cleanText = line.replace(/^(\s*[-*]|\s*\d+\.)\s/, '')
+                    const parsed = parseSmartSyntax(cleanText)
+                    onTaskCreate(parsed)
+                  })
+                  closePalette()
+                  // Optional: Show toast or feedback "Imported X tasks"
+                }
+              }}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder='Search Vigilo tasks… (type "vigilo" for management view)'
+              placeholder='Search Btwfyi tasks… (type "btwfyi" for management view)'
               className="flex-1 bg-transparent text-base focus:outline-none placeholder:text-zinc-500"
               aria-label="Search tasks"
               aria-autocomplete="list"
-              aria-controls="vigilo-palette-list"
+              aria-controls="btwfyi-palette-list"
               aria-expanded="true"
             />
             <kbd className="rounded-md border border-zinc-800 px-2 py-1 text-xs text-zinc-400" aria-label="Press Escape to close">
               esc
             </kbd>
           </div>
-          <p className="mt-1 text-xs text-zinc-500" id="vigilo-palette-help">
+          <p className="mt-1 text-xs text-zinc-500" id="btwfyi-palette-help">
             {disableShortcut || shortcutKey === null
-              ? 'Type "vigilo" for overlay management.'
-              : `${shortcutModifier === 'alt' ? 'Alt' : shortcutModifier === 'ctrl' ? 'Ctrl' : shortcutModifier === 'meta' ? 'Cmd' : 'Shift'} + ${shortcutKey.toUpperCase()} to open from anywhere. Type "vigilo" for overlay management.`}
+              ? 'Type "btwfyi" for overlay management.'
+              : `${shortcutModifier === 'alt' ? 'Alt' : shortcutModifier === 'ctrl' ? 'Ctrl' : shortcutModifier === 'meta' ? 'Cmd' : 'Shift'} + ${shortcutKey.toUpperCase()} to open from anywhere. Type "btwfyi" for overlay management.`}
             {' '}
             {filteredTasks.length > 0 && 'Use arrow keys to navigate, Enter to select, Backspace to go back.'}
           </p>
@@ -274,13 +297,13 @@ export function VigiloCommandPalette({
         <div className="max-h-[60vh] overflow-y-auto">
           {instances.length === 0 ? (
             <div className="px-5 py-12 text-center text-sm text-zinc-500">
-              No Vigilo overlays are active on this page yet.
+              No Btwfyi overlays are active on this page yet.
             </div>
           ) : managementMode ? (
             <ManagementView instances={instances} closePalette={closePalette} />
           ) : filteredTasks.length > 0 ? (
             <ul
-              id="vigilo-palette-list"
+              id="btwfyi-palette-list"
               role="listbox"
               aria-label="Task list"
               className="divide-y divide-zinc-900"
@@ -293,11 +316,10 @@ export function VigiloCommandPalette({
                       ref={(el) => {
                         taskButtonRefs.current[index] = el
                       }}
-                      className={`flex w-full flex-col gap-1 px-5 py-3 text-left transition-colors ${
-                        isSelected
-                          ? 'bg-blue-500/20 ring-2 ring-blue-500'
-                          : 'hover:bg-white/5'
-                      }`}
+                      className={`flex w-full flex-col gap-1 px-5 py-3 text-left transition-colors ${isSelected
+                        ? 'bg-blue-500/20 ring-2 ring-blue-500'
+                        : 'hover:bg-white/5'
+                        }`}
                       onClick={() => handleSelectTask(task)}
                       onMouseEnter={() => setSelectedIndex(index)}
                       aria-label={`${task.text}, Status: ${task.status}, Instance: ${instance.label}${task.hasConnection ? ', Has connection' : ''}`}
@@ -339,7 +361,14 @@ export function VigiloCommandPalette({
             </ul>
           ) : (
             <div className="px-5 py-8 text-center text-sm text-zinc-500" role="status" aria-live="polite">
-              No tasks match "{query}".
+              {onTaskCreate ? (
+                <>
+                  <span className="block mb-1 text-zinc-400">Press <kbd className="font-sans border border-zinc-700 rounded px-1 text-xs">Enter</kbd> to create task</span>
+                  <span className="text-zinc-500">"{query}"</span>
+                </>
+              ) : (
+                `No tasks match "${query}".`
+              )}
             </div>
           )}
         </div>
@@ -378,11 +407,10 @@ function ManagementView({
               </p>
             </div>
             <span
-              className={`text-2xs rounded-full border px-2 py-0.5 ${
-                instance.hidden
-                  ? 'border-zinc-800 text-zinc-500'
-                  : 'border-emerald-500/40 text-emerald-300'
-              }`}
+              className={`text-2xs rounded-full border px-2 py-0.5 ${instance.hidden
+                ? 'border-zinc-800 text-zinc-500'
+                : 'border-emerald-500/40 text-emerald-300'
+                }`}
             >
               {instance.hidden ? 'Hidden' : 'Visible'}
             </span>

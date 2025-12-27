@@ -10,34 +10,34 @@ Vigilo provides React components with hooks-based state management for task awar
 ## Installation
 
 ```bash
-npm install @remcostoeten/vigilo
+pnpm add btwfyi
 ```
 
 ## Basic Usage
 
 ```tsx
-import { Vigilo } from '@remcostoeten/vigilo/react'
-import type { CategoryConfig } from '@remcostoeten/vigilo/react'
+import { Vigilo } from 'btwfyi/react'
+import type { CategoryConfig } from 'btwfyi'
 
 const categories: CategoryConfig[] = [
   {
     id: 'backend',
     displayName: 'Backend Tasks',
     items: [
-      { text: 'Fix user authentication bug', status: 'working' },
-      { text: 'Add API rate limiting', status: 'todo' },
-      { text: 'Implement password reset', status: 'todo' }
-    ]
+      { text: 'Fix user authentication bug', action: 'fix', priority: 'high' },
+      { text: 'Add API rate limiting', action: 'feat', priority: 'medium' },
+      { text: 'Implement password reset', action: 'feat', priority: 'low' },
+    ],
   },
   {
     id: 'frontend',
     displayName: 'Frontend Tasks',
     items: [
-      { text: 'Update dashboard layout', status: 'done' },
-      { text: 'Add dark mode support', status: 'todo' },
-      { text: 'Fix responsive bugs', status: 'working' }
-    ]
-  }
+      { text: 'Update dashboard layout', action: 'feat', priority: 'high' },
+      { text: 'Add dark mode support', action: 'feat', priority: 'medium' },
+      { text: 'Fix responsive bugs', action: 'fix', priority: 'low' },
+    ],
+  },
 ]
 
 function App() {
@@ -58,81 +58,126 @@ function App() {
 }
 ```
 
-## Advanced Usage
+## Easy Styling
 
-### Custom Themes
+### Via Props (Recommended)
 
 ```tsx
-import type { VigiloThemeOverrides } from '@remcostoeten/vigilo/react'
-
-const customTheme: VigiloThemeOverrides = {
-  colors: {
-    primary: '#10b981',      // Green accent
-    primaryDim: 'rgba(16, 185, 129, 0.1)',
-    freeroam: '#8b5cf6',      // Keep connection color
-    textMain: '#ffffff',        // White text
-    textDim: '#d1d5db',         // Muted text
-    bgPanel: '#1f2937',        // Dark green background
-    borderPanel: '#065f46',     // Green border
-    bgOverlay: 'rgba(31, 41, 55, 0.3)'
-  }
-}
-
-function App() {
-  return (
-    <Vigilo
-      category="development"
-      themeOverrides={customTheme}
-      categories={categories}
-    />
-  )
-}
+<Vigilo
+  category="development"
+  categories={categories}
+  themeOverrides={{
+    colors: {
+      primary: '#10b981',                    // Green accent
+      primaryDim: 'rgba(16, 185, 129, 0.1)',
+      freeroam: '#8b5cf6',                   // Purple for freeroam
+      textMain: 'text-white',
+      textDim: 'text-gray-400',
+      bgPanel: 'bg-gray-900/90',             // Semi-transparent
+      borderPanel: 'border-gray-700',
+    },
+  }}
+  stylesOverrides={{
+    connectorDot: { fill: '#10b981', r: 5 },
+    freeroamDot: { fill: '#8b5cf6', r: 4, opacity: 0.8 },
+  }}
+/>
 ```
 
-### Programmatic Control
+### Via Settings Panel (Runtime)
+
+Press **'s'** while focused on Vigilo to open settings:
+- **Line Opacity**: Slider 0-100%
+- **Component Opacity**: Slider 10-100%
+- **Line Color**: Color picker
+- **Show Lines**: Toggle on/off
+- **Show Badges**: Toggle on/off
+- **Display Mode**: Full / Compact / Minimal
+
+### Programmatic Runtime Styling
 
 ```tsx
-import { useVigiloConnection } from '@remcostoeten/vigilo/react'
+import { useVigiloInstance } from 'btwfyi/react'
 
-function ConnectionManager() {
-  const { connect, disconnect, focus, getConnectedElements } = useVigiloConnection('development-tasks')
+function StyleController() {
+  const { store } = useVigiloInstance({ instanceId: 'development' })
 
-  const handleConnectToProfile = () => {
-    const profileElement = document.querySelector('#user-profile')
-    if (profileElement) {
-      connect('user-profile-task', profileElement)
-    }
+  const makeSubtle = () => {
+    store?.setLineOpacity(0.3)
+    store?.setComponentOpacity(0.7)
   }
 
-  const handleDisconnect = (taskId: number) => {
-    disconnect(taskId)
+  const makeVisible = () => {
+    store?.setLineOpacity(0.8)
+    store?.setComponentOpacity(1)
   }
 
   return (
     <div>
-      <button onClick={handleConnectToProfile}>
-        Connect to Profile
-      </button>
-      <button onClick={() => handleDisconnect(1)}>
-        Disconnect Task 1
-      </button>
+      <button onClick={makeSubtle}>Subtle Mode</button>
+      <button onClick={makeVisible}>Visible Mode</button>
     </div>
   )
 }
 ```
 
-### TypeScript Support
+## Programmatic Connections
+
+```tsx
+import { useVigiloInstance } from 'btwfyi/react'
+
+function ConnectionManager() {
+  const { addConnection, removeConnection, setConnections } = useVigiloInstance({
+    instanceId: 'development'
+  })
+
+  // Connect task 0 to a CSS selector
+  const connectToHeader = () => addConnection(0, '#header', 'Header')
+
+  // Connect task 1 to a DOM element
+  const connectToSidebar = () => {
+    const el = document.querySelector('.sidebar')
+    if (el) addConnection(1, el, 'Sidebar')
+  }
+
+  // Connect task 2 to fixed coordinates (freeroam)
+  const connectToPosition = () => addConnection(2, { x: 500, y: 300 })
+
+  // Set all connections at once (for AI automation)
+  const setAllConnections = () => {
+    setConnections([
+      { todoIndex: 0, targetSelector: '#login-form', targetLabel: 'Login' },
+      { todoIndex: 1, targetSelector: '.dashboard', targetLabel: 'Dashboard' },
+      { todoIndex: 2, targetPosition: { x: 800, y: 400 } },
+    ])
+  }
+
+  return (
+    <div>
+      <button onClick={connectToHeader}>Connect to Header</button>
+      <button onClick={connectToSidebar}>Connect to Sidebar</button>
+      <button onClick={() => removeConnection(0)}>Remove Connection</button>
+    </div>
+  )
+}
+```
+
+## TypeScript Support
 
 Full TypeScript definitions are included:
 
 ```tsx
-import type {
-  CategoryConfig,
+import { Vigilo, useVigiloInstance } from 'btwfyi/react'
+import type { 
+  CategoryConfig, 
+  TodoItem,
+  Connection,
+  VigiloStorage 
+} from 'btwfyi' // core types at root
+import type { 
   VigiloProps,
-  TodoStatus,
-  DisplayMode,
-  VigiloThemeOverrides
-} from '@remcostoeten/vigilo/react'
+  ThemeOverrides 
+} from 'btwfyi/react'
 
 const categories: CategoryConfig[] = [
   {
@@ -141,11 +186,12 @@ const categories: CategoryConfig[] = [
     items: [
       {
         text: 'Implement authentication endpoint',
-        status: 'done' as TodoStatus,
-        action: '/auth/login'
-      }
-    ]
-  }
+        action: 'feat',
+        priority: 'high',
+        tags: ['auth', 'api'],
+      },
+    ],
+  },
 ]
 ```
 
@@ -155,47 +201,37 @@ const categories: CategoryConfig[] = [
 
 ```tsx
 // Good: Unique identifiers prevent conflicts
-<Vigilo category="api" instanceId="user-service" />
-<Vigilo category="web" instanceId="frontend-ui" />
+<Vigilo category="api" instanceId="user-service" categories={categories} />
+<Vigilo category="web" instanceId="frontend-ui" categories={categories} />
 
-// Avoid: Same instanceId for different contexts
-<Vigilo category="tasks" instanceId="main" />
-<Vigilo category="tasks" instanceId="main" /> // This will conflict
+// Avoid: Same instanceId for different contexts will share state
+<Vigilo category="tasks" instanceId="main" categories={categories} />
+<Vigilo category="tasks" instanceId="main" categories={categories} />
 ```
 
-### 2. Structure Categories Logically
+### 2. Only Show in Development
 
 ```tsx
-const categories = [
-  {
-    id: 'user-management',
-    displayName: 'User Management',
-    items: [
-      { text: 'Create user', status: 'done' },
-      { text: 'Edit profile', status: 'todo' },
-      { text: 'Delete account', status: 'blocked' }
-    ]
-  },
-  {
-    id: 'system-admin',
-    displayName: 'System Administration',
-    items: [
-      { text: 'Database migration', status: 'working' },
-      { text: 'Security audit', status: 'todo' }
-    ]
-  }
-]
+<Vigilo
+  category="development"
+  categories={categories}
+  enabled={process.env.NODE_ENV === 'development'}
+/>
 ```
 
-### 3. Handle Loading States
+### 3. Handle Async Categories
 
 ```tsx
 function App() {
   const [categories, setCategories] = useState<CategoryConfig[] | null>(null)
 
-  if (!categories) {
-    return <div>Loading tasks...</div>
-  }
+  useEffect(() => {
+    fetch('/api/tasks')
+      .then(res => res.json())
+      .then(data => setCategories(data.categories))
+  }, [])
+
+  if (!categories) return null
 
   return <Vigilo category="development" categories={categories} />
 }

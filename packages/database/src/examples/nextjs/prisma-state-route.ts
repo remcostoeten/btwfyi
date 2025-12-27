@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createVigiloApiHandlers } from '@vigilo/database/server/handlers'
-import { createVigiloPrismaQueries } from '@vigilo/database/server/prisma'
+import { createVigiloApiHandlers } from '@btwfyi/database/server/handlers'
+import { createVigiloPrismaQueries } from '@btwfyi/database/server/prisma'
 import { PrismaClient } from '@prisma/client'
 
 // Initialize Prisma client (consider singleton pattern in production)
@@ -8,7 +8,7 @@ const prisma = new PrismaClient()
 const queries = createVigiloPrismaQueries(prisma)
 const handlers = createVigiloApiHandlers(queries)
 
-// GET /api/vigilo/state/[instanceKey]
+// GET /api/btwfyi/state/[instanceKey]
 export async function GET(
   request: NextRequest,
   { params }: { params: { instanceKey: string } }
@@ -16,7 +16,7 @@ export async function GET(
   return handlers.handleLoadState(request, { params })
 }
 
-// POST /api/vigilo/state/[instanceKey] (for bulk updates)
+// POST /api/btwfyi/state/[instanceKey] (for bulk updates)
 export async function POST(
   request: NextRequest,
   { params }: { params: { instanceKey: string } }

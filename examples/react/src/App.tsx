@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
-import { Vigilo, useVigiloInstance } from '@remcostoeten/vigilo/react'
-import type { CategoryConfig } from '@remcostoeten/vigilo/react'
+import { Vigilo, useVigiloInstance } from 'btwfyi/react'
+import type { CategoryConfig } from 'btwfyi/react'
 
 const categories: readonly CategoryConfig[] = [
   {
@@ -171,17 +171,17 @@ function App() {
       </div>
 
       {/* First Vigilo instance - Development tasks */}
-      <Vigilo 
-        categories={categories} 
-        category="development" 
+      <Vigilo
+        categories={categories}
+        category="development"
         enabled={true}
         instanceId="development"
       />
-      
+
       {/* Second Vigilo instance - Design tasks */}
-      <Vigilo 
-        categories={categories} 
-        category="design" 
+      <Vigilo
+        categories={categories}
+        category="design"
         enabled={true}
         instanceId="design"
       />

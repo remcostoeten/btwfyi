@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@remcostoeten/vigilo/react': path.resolve(__dirname, '../../src/react'),
-      '@remcostoeten/vigilo': path.resolve(__dirname, '../../src/core'),
+      'btwfyi/react': path.resolve(__dirname, '../../src/react'),
+      'btwfyi': path.resolve(__dirname, '../../src/core'),
     },
   },
 })

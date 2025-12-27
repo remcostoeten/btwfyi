@@ -1,7 +1,7 @@
 # Vigilo Database Persistence - LLM Context
 
 ## Package Overview
-@vigilo/database provides complete database persistence solution for Vigilo overlays. Users can opt-in to store tasks, positions, connections, and settings in their own database via CLI schema generation.
+@btwfyi/database provides complete database persistence solution for Vigilo overlays. Users can opt-in to store tasks, positions, connections, and settings in their own database via CLI schema generation.
 
 ## Key Features
 - CLI schema generation for Prisma, Drizzle, and raw SQL
@@ -15,15 +15,15 @@
 
 ## Installation
 ```bash
-npm install @vigilo/database @remcostoeten/vigilo-core @remcostoeten/vigilo-react
+npm install @btwfyi/database btwfyi-core btwfyi-react
 npm install @prisma/client prisma  # OR drizzle-orm postgres
 ```
 
 ## CLI Usage
 ```bash
-npx vigilo-db --prisma --out prisma/schema.prisma
-npx vigilo-db --drizzle --out lib/db/schema.ts
-npx vigilo-db --sql --out db/vigilo.sql
+npx btwfyi-db --prisma --out prisma/schema.prisma
+npx btwfyi-db --drizzle --out lib/db/schema.ts
+npx btwfyi-db --sql --out db/btwfyi.sql
 ```
 
 ## Database Schema
@@ -35,7 +35,7 @@ Core tables:
 - VigiloStatus: Task completion status (todo/working/done)
 
 ## API Endpoints Pattern
-All endpoints: `/api/vigilo/[resource]/[instanceKey]`
+All endpoints: `/api/btwfyi/[resource]/[instanceKey]`
 
 Key endpoints:
 - GET /state/[instanceKey] - Load complete state
@@ -49,7 +49,7 @@ Key endpoints:
 ### Provider Pattern ( Recommended )
 ```tsx
 <VigiloProvider
-  baseUrl="/api/vigilo"
+  baseUrl="/api/btwfyi"
   defaultInstanceId="user-tasks"
   getAuthToken={() => localStorage.getItem('token')}
 >
@@ -60,7 +60,7 @@ Key endpoints:
 ### Manual Storage
 ```tsx
 const storage = createApiVigiloStorage({
-  baseUrl: '/api/vigilo',
+  baseUrl: '/api/btwfyi',
   instanceId: 'user-tasks',
   token: user.authToken
 })
@@ -72,7 +72,7 @@ const storage = createApiVigiloStorage({
 
 ### Next.js + Prisma
 ```typescript
-import { createVigiloApiHandlers, createVigiloPrismaQueries } from '@vigilo/database'
+import { createVigiloApiHandlers, createVigiloPrismaQueries } from '@btwfyi/database'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
@@ -86,7 +86,7 @@ export async function GET(request, { params }) {
 
 ### Next.js + Drizzle
 ```typescript
-import { createVigiloApiHandlers, createVigiloDrizzleQueries } from '@vigilo/database'
+import { createVigiloApiHandlers, createVigiloDrizzleQueries } from '@btwfyi/database'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 

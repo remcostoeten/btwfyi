@@ -5,7 +5,7 @@ export default defineConfig({
     name: 'Vigilo',
     description: 'A lightweight task awareness overlay for development environments',
     logo: 'https://github.com/remcostoeten.png', // You can replace with your logo
-    url: 'https://github.com/remcostoeten/vigilo',
+    url: 'https://github.com/remcostoeten/btwfyi',
     version: '0.0.13'
   },
 

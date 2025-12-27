@@ -4,7 +4,7 @@ import type { StorageKeys, VigiloState, DisplayMode, TodoStatus, VigiloStorage, 
  * The prefix for all localStorage keys used by Vigilo.
  * @internal
  */
-const STORAGE_PREFIX = 'vigilo-state-'
+const STORAGE_PREFIX = 'btwfyi-state-'
 
 /**
  * Creates a set of namespaced localStorage keys for a specific Vigilo instance.

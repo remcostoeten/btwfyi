@@ -1,8 +1,8 @@
 import { useMemo, useRef, useEffect } from 'react'
-import { createVigiloStore, createStorageKeys, type VigiloStore, type Connection } from '../core'
+import { createBtwfyiStore, createStorageKeys, type BtwfyiStore, type Connection } from '../core'
 import { generateSelector, getElementLabel } from './dom'
 
-export interface UseVigiloInstanceOptions {
+export interface UseBtwfyiInstanceOptions {
   /**
    * The category ID or instance ID to access
    */
@@ -13,15 +13,15 @@ export interface UseVigiloInstanceOptions {
   lineColor?: string
 }
 
-export interface UseVigiloInstanceReturn {
+export interface UseBtwfyiInstanceReturn {
   /**
-   * The Vigilo store instance
+   * The Btwfyi store instance
    */
-  store: VigiloStore | null
+  store: BtwfyiStore | null
   /**
    * Get current state from the store
    */
-  getState: () => ReturnType<VigiloStore['getState']> | null
+  getState: () => ReturnType<BtwfyiStore['getState']> | null
   /**
    * Add a connection programmatically
    * @param todoIndex - The index of the task (0-based)
@@ -50,12 +50,12 @@ export interface UseVigiloInstanceReturn {
 }
 
 /**
- * Hook to access a Vigilo instance store programmatically.
+ * Hook to access a Btwfyi instance store programmatically.
  * Allows you to add/remove connections and manage state from outside the component.
  *
  * @example
  * ```tsx
- * const { addConnection } = useVigiloInstance({ instanceId: 'development' })
+ * const { addConnection } = useBtwfyiInstance({ instanceId: 'development' })
  *
  * // Connect task 0 to an element
  * addConnection(0, '#my-feature')
@@ -68,15 +68,15 @@ export interface UseVigiloInstanceReturn {
  * addConnection(2, { x: 100, y: 200 })
  * ```
  */
-export function useVigiloInstance({
+export function useBtwfyiInstance({
   instanceId,
   lineColor,
-}: UseVigiloInstanceOptions): UseVigiloInstanceReturn {
+}: UseBtwfyiInstanceOptions): UseBtwfyiInstanceReturn {
   const keys = useMemo(() => createStorageKeys(instanceId), [instanceId])
-  const storeRef = useRef<VigiloStore | null>(null)
+  const storeRef = useRef<BtwfyiStore | null>(null)
 
   useEffect(() => {
-    const store = createVigiloStore(keys, lineColor ? { lineColor } : undefined)
+    const store = createBtwfyiStore(keys, lineColor ? { lineColor } : undefined)
     storeRef.current = store
     return () => {
       storeRef.current = null
@@ -90,7 +90,7 @@ export function useVigiloInstance({
   ) => {
     const store = storeRef.current
     if (!store) {
-      console.warn(`Vigilo store not initialized for instance: ${instanceId}`)
+      console.warn(`Btwfyi store not initialized for instance: ${instanceId}`)
       return
     }
 
@@ -137,7 +137,7 @@ export function useVigiloInstance({
   const removeConnection = (todoIndex: number) => {
     const store = storeRef.current
     if (!store) {
-      console.warn(`Vigilo store not initialized for instance: ${instanceId}`)
+      console.warn(`Btwfyi store not initialized for instance: ${instanceId}`)
       return
     }
 
@@ -149,7 +149,7 @@ export function useVigiloInstance({
   const setConnections = (connections: Connection[]) => {
     const store = storeRef.current
     if (!store) {
-      console.warn(`Vigilo store not initialized for instance: ${instanceId}`)
+      console.warn(`Btwfyi store not initialized for instance: ${instanceId}`)
       return
     }
     store.setConnections(connections)

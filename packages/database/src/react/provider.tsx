@@ -1,8 +1,8 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import { createApiVigiloStorage, type ApiStorageConfig } from '@vigilo/database/api-storage'
-import type { VigiloStorage } from '@remcostoeten/vigilo-core'
+import { createApiVigiloStorage, type ApiStorageConfig } from '@btwfyi/database/api-storage'
+import type { VigiloStorage } from 'btwfyi-core'
 
 export interface VigiloProviderConfig extends Omit<ApiStorageConfig, 'instanceId'> {
   /** Default instance ID to use for all Vigilo components */
@@ -33,7 +33,7 @@ const VigiloContext = createContext<VigiloContextValue | undefined>(undefined)
  * ```tsx
  * // In your app root or layout
  * <VigiloProvider 
- *   baseUrl="https://your-app.com/api/vigilo"
+ *   baseUrl="https://your-app.com/api/btwfyi"
  *   defaultInstanceId="user-tasks"
  *   getAuthToken={() => user.token}
  * >
@@ -71,7 +71,7 @@ export function VigiloProvider({
   const contextValue = useMemo<VigiloContextValue>(() => {
     const getStorage = (instanceId: string = defaultInstanceId): VigiloStorage => {
       const currentToken = getAuthToken ? getAuthToken() : authToken
-      
+
       return createApiVigiloStorage({
         baseUrl,
         instanceId,
@@ -109,11 +109,11 @@ export function VigiloProvider({
  */
 export function useVigiloStorage() {
   const context = useContext(VigiloContext)
-  
+
   if (!context) {
     throw new Error('useVigiloStorage must be used within a VigiloProvider')
   }
-  
+
   return context
 }
 
@@ -126,19 +126,19 @@ export function useVigiloStorage() {
  * <Vigilo storage={storage} category="dev" categories={devCategories} />
  * 
  * // Use this hook
- * const vigiloProps = useVigiloProps({ category: 'dev', categories: devCategories })
- * <Vigilo {...vigiloProps} />
+ * const btwfyiProps = useVigiloProps({ category: 'dev', categories: devCategories })
+ * <Vigilo {...btwfyiProps} />
  * ```
  */
 export function useVigiloProps<T extends { category: string; categories: any; instanceId?: string }>(
   props: T
 ): T & { storage: VigiloStorage } {
   const { getStorage } = useVigiloStorage()
-  
+
   const storage = useMemo(() => {
     return getStorage(props.instanceId)
   }, [getStorage, props.instanceId])
-  
+
   return {
     ...props,
     storage
@@ -160,7 +160,7 @@ export function withVigiloStorage<P extends { category: string; categories: any;
   Component: React.ComponentType<P & { storage: VigiloStorage }>
 ) {
   return function WithVigiloStorageComponent(props: P) {
-    const vigiloProps = useVigiloProps(props)
-    return <Component {...vigiloProps} />
+    const btwfyiProps = useVigiloProps(props)
+    return <Component {...btwfyiProps} />
   }
 }

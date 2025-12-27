@@ -1,5 +1,5 @@
 import type { VigiloProps } from './types'
-import { useVigiloStore } from './use-vigilo-store'
+import { useVigiloStore } from './use-btwfyi-store'
 
 export function createVigiloSimple(props: VigiloProps) {
   const store = useVigiloStore(props)

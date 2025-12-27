@@ -1,5 +1,5 @@
 {
-  "name": "@vigilo/database",
+  "name": "@btwfyi/database",
   "version": "0.0.1",
   "private": false,
   "description": "Database utilities for Vigilo, including schema generation.",
@@ -7,7 +7,7 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "bin": {
-    "vigilo-db": "./dist/cli.js"
+    "btwfyi-db": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsup",

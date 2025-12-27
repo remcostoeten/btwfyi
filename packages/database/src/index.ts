@@ -1,4 +1,4 @@
-// Main entry point for @vigilo/database package
+// Main entry point for @btwfyi/database package
 
 // CLI schema generation
 export { program } from './cli'
@@ -24,11 +24,11 @@ export { createVigiloRouter } from './server/trpc'
 export type { VigiloRouter } from './server/trpc'
 
 // React integration helpers
-export { 
-  VigiloProvider, 
-  useVigiloStorage, 
-  useVigiloProps, 
-  withVigiloStorage 
+export {
+  VigiloProvider,
+  useVigiloStorage,
+  useVigiloProps,
+  withVigiloStorage
 } from './react/provider'
 export type { VigiloProviderConfig } from './react/provider'
 

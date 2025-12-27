@@ -1,4 +1,4 @@
-import type { TodoStatus } from '@remcostoeten/vigilo-core'
+import type { TodoStatus } from 'btwfyi-core'
 
 /** Snapshot describing a single task inside the command palette. */
 export type PaletteTaskSnapshot = {

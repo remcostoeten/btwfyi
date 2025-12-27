@@ -1,5 +1,5 @@
 {
-  "name": "@remcostoeten/vigilo-react",
+  "name": "btwfyi-react",
   "version": "0.0.12",
   "description": "React bindings for Vigilo task awareness overlay",
   "author": "Remco Stoeten",
@@ -27,7 +27,7 @@
     "react-dom": ">=18.0.0"
   },
   "dependencies": {
-    "@remcostoeten/vigilo-core": "file:../core"
+    "btwfyi-core": "file:../core"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",

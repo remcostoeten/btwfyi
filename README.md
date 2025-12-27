@@ -8,11 +8,11 @@ A lightweight task awareness overlay for development environments. Vigilo keeps 
 ## Installation
 
 ```bash
-npm install @remcostoeten/vigilo
+npm install btwfyi
 # or
-pnpm add @remcostoeten/vigilo
+pnpm add btwfyi
 # or
-yarn add @remcostoeten/vigilo
+yarn add btwfyi
 ```
 
 ## Usage
@@ -20,8 +20,8 @@ yarn add @remcostoeten/vigilo
 ### React
 
 ```tsx
-import { Vigilo } from "@remcostoeten/vigilo/react";
-import type { CategoryConfig } from "@remcostoeten/vigilo/react";
+import { Vigilo } from "btwfyi/react";
+import type { CategoryConfig } from "btwfyi/react";
 
 const categories: CategoryConfig[] = [
   {
@@ -51,8 +51,8 @@ import {
   loadState,
   savePosition,
   calculateBezier,
-} from "vigilo";
-import { generateSelector } from "@remcostoeten/vigilo/react";
+} from "btwfyi";
+import { generateSelector } from "btwfyi/react";
 
 const keys = createStorageKeys("my-instance");
 const state = loadState(keys);
@@ -94,7 +94,7 @@ type TodoItem = {
 ### Vue Composition
 
 ```ts
-import { useVigiloStore } from "@remcostoeten/vigilo/vue";
+import { useVigiloStore } from "btwfyi/vue";
 
 const { state, store } = useVigiloStore({
   category: "dev",
@@ -111,11 +111,11 @@ The framework-agnostic core provides utilities for:
 - Storage management (`createStorageKeys`, `loadState`, `savePosition`, etc.)
 - Connection calculations (`calculateBezier`)
 
-DOM helpers such as `generateSelector`, `getElementLabel`, and `isValidSelector` live in the React bundle (`@remcostoeten/vigilo/react`) because they require direct browser access.
+DOM helpers such as `generateSelector`, `getElementLabel`, and `isValidSelector` live in the React bundle (`btwfyi/react`) because they require direct browser access.
 
 ## Command Palette
 
-Press `Alt + K` anywhere in your app to open the Vigilo command palette. Search across every mounted overlay, jump directly to a task, or type `vigilo` to enter management mode where you can show/hide overlays, clear connections, or reset statuses globally.
+Press `Alt + K` anywhere in your app to open the Vigilo command palette. Search across every mounted overlay, jump directly to a task, or type `btwfyi` to enter management mode where you can show/hide overlays, clear connections, or reset statuses globally.
 
 ## Theming
 

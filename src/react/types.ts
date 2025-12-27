@@ -1,20 +1,21 @@
-import type { CategoryConfig, VigiloConfig } from '../core/types'
+import type { CategoryConfig, BtwfyiConfig } from '../core/types'
 import type { baseTheme, baseStyles } from './constants'
 
-export type { CategoryConfig, VigiloConfig }
+export type { CategoryConfig, BtwfyiConfig }
 
 /**
- * Props for the Vigilo React component. Passing a literal `categories` array
+ * Props for the Btwfyi React component. Passing a literal `categories` array
  * narrows the `category` prop to the provided IDs for better intellisense.
  *
  * Theme props accept Tailwind utility strings, CSS variables, rgb(a), or hex values.
  * Provide `themeOverrides.modes.light|dark` to customize per color mode.
  */
-export interface VigiloProps<
+export interface BtwfyiProps<
   TCategories extends readonly CategoryConfig[] = CategoryConfig[]
-> extends VigiloConfig<TCategories[number]['id']> {
+> extends BtwfyiConfig<TCategories[number]['id']> {
   categories: TCategories
   enabled?: boolean
+  onTaskCreate?: (task: { text: string; dueDate?: Date; tags: string[]; priority?: 'low' | 'medium' | 'high' }) => void
   /** Custom className to apply to the panel container */
   className?: string
   /** Override any theme token while keeping defaults for unspecified keys */

@@ -37,14 +37,14 @@ export interface VigiloCommandPaletteProps {
   shortcutModifier?: 'alt' | 'ctrl' | 'meta' | 'shift'
   /**
    * Whether to disable the keyboard shortcut entirely (default: false).
-   * If true, only the "vigilo" typed sequence will open the palette.
+   * If true, only the "btwfyi" typed sequence will open the palette.
    */
   disableShortcut?: boolean
 }
 
 /**
  * Global command palette that surfaces all Vigilo tasks across an application.
- * Opens via Alt + K (configurable) or by typing "vigilo" in sequence.
+ * Opens via Alt + K (configurable) or by typing "btwfyi" in sequence.
  */
 export function VigiloCommandPalette({
   shortcutKey = 'k',
@@ -89,7 +89,7 @@ export function VigiloCommandPalette({
     setSelectedIndex(null)
   }, [])
 
-  const managementMode = query.trim().toLowerCase() === 'vigilo'
+  const managementMode = query.trim().toLowerCase() === 'btwfyi'
 
   const tasks = useMemo(() => {
     return instances.flatMap((instance) =>
@@ -130,14 +130,14 @@ export function VigiloCommandPalette({
 
       const key = e.key.toLowerCase()
       const targetKey = shortcutKey?.toLowerCase() ?? ''
-      
+
       // Check if the configured shortcut is pressed
       const modifierPressed =
         (shortcutModifier === 'alt' && e.altKey) ||
         (shortcutModifier === 'ctrl' && e.ctrlKey) ||
         (shortcutModifier === 'meta' && e.metaKey) ||
         (shortcutModifier === 'shift' && e.shiftKey)
-      
+
       const isShortcutPressed = modifierPressed && key === targetKey
       if (isShortcutPressed) {
         e.preventDefault()
@@ -147,8 +147,8 @@ export function VigiloCommandPalette({
 
       if (!isOpen && e.key.length === 1 && /^[a-zA-Z]$/.test(e.key)) {
         typedRef.current = (typedRef.current + key).slice(-6)
-        if (typedRef.current.endsWith('vigilo')) {
-          openPalette('vigilo')
+        if (typedRef.current.endsWith('btwfyi')) {
+          openPalette('btwfyi')
           typedRef.current = ''
           e.preventDefault()
         }
@@ -262,21 +262,21 @@ export function VigiloCommandPalette({
               ref={inputRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder='Search Vigilo tasks… (type "vigilo" for management view)'
+              placeholder='Search Vigilo tasks… (type "btwfyi" for management view)'
               className="flex-1 bg-transparent text-base focus:outline-none placeholder:text-zinc-500"
               aria-label="Search tasks"
               aria-autocomplete="list"
-              aria-controls="vigilo-palette-list"
+              aria-controls="btwfyi-palette-list"
               aria-expanded="true"
             />
             <kbd className="rounded-md border border-zinc-800 px-2 py-1 text-xs text-zinc-400" aria-label="Press Escape to close">
               esc
             </kbd>
           </div>
-          <p className="mt-1 text-xs text-zinc-500" id="vigilo-palette-help">
+          <p className="mt-1 text-xs text-zinc-500" id="btwfyi-palette-help">
             {disableShortcut || shortcutKey === null
-              ? 'Type "vigilo" for overlay management.'
-              : `${shortcutModifier === 'alt' ? 'Alt' : shortcutModifier === 'ctrl' ? 'Ctrl' : shortcutModifier === 'meta' ? 'Cmd' : 'Shift'} + ${(shortcutKey ?? 'k').toUpperCase()} to open from anywhere. Type "vigilo" for overlay management.`}
+              ? 'Type "btwfyi" for overlay management.'
+              : `${shortcutModifier === 'alt' ? 'Alt' : shortcutModifier === 'ctrl' ? 'Ctrl' : shortcutModifier === 'meta' ? 'Cmd' : 'Shift'} + ${(shortcutKey ?? 'k').toUpperCase()} to open from anywhere. Type "btwfyi" for overlay management.`}
             {' '}
             {filteredTasks.length > 0 && 'Use arrow keys to navigate, Enter to select, Backspace to go back.'}
           </p>
@@ -290,7 +290,7 @@ export function VigiloCommandPalette({
             <ManagementView instances={instances} closePalette={closePalette} />
           ) : filteredTasks.length > 0 ? (
             <ul
-              id="vigilo-palette-list"
+              id="btwfyi-palette-list"
               role="listbox"
               aria-label="Task list"
               className="divide-y divide-zinc-900"
@@ -299,51 +299,50 @@ export function VigiloCommandPalette({
                 const isSelected = selectedIndex === index
                 return (
                   <li key={task.id} role="option" aria-selected={isSelected}>
-                  <button
+                    <button
                       ref={(el) => {
                         taskButtonRefs.current[index] = el
                       }}
-                      className={`flex w-full flex-col gap-1 px-5 py-3 text-left transition-colors ${
-                        isSelected
+                      className={`flex w-full flex-col gap-1 px-5 py-3 text-left transition-colors ${isSelected
                           ? 'bg-white/10 ring-2 ring-zinc-600'
                           : 'hover:bg-white/5'
-                      }`}
-                    onClick={() => handleSelectTask(task)}
+                        }`}
+                      onClick={() => handleSelectTask(task)}
                       onMouseEnter={() => setSelectedIndex(index)}
                       aria-label={`${task.text}, Status: ${task.status}, Instance: ${instance.label}${task.hasConnection ? ', Has connection' : ''}`}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-medium text-zinc-100">
-                        {task.text}
-                      </span>
-                      <span className="text-2xs inline-flex items-center gap-1 rounded-full border border-zinc-800 px-2 py-0.5 text-zinc-400">
-                        {instance.label}
-                        {task.hasConnection && (
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium text-zinc-100">
+                          {task.text}
+                        </span>
+                        <span className="text-2xs inline-flex items-center gap-1 rounded-full border border-zinc-800 px-2 py-0.5 text-zinc-400">
+                          {instance.label}
+                          {task.hasConnection && (
                             <span
                               className="inline-flex h-2 w-2 rounded-full bg-zinc-400"
                               aria-label="Has connection"
                             />
-                        )}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs text-zinc-500">
-                      <span>Status: {task.status}</span>
-                      {task.hasConnection && (
-                        <button
-                          type="button"
-                          className="text-xs text-rose-400 hover:underline"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleClearConnection(task)
-                          }}
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-zinc-500">
+                        <span>Status: {task.status}</span>
+                        {task.hasConnection && (
+                          <button
+                            type="button"
+                            className="text-xs text-rose-400 hover:underline"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleClearConnection(task)
+                            }}
                             aria-label={`Remove connection for ${task.text}`}
-                        >
-                          Remove connection
-                        </button>
-                      )}
-                    </div>
-                  </button>
-                </li>
+                          >
+                            Remove connection
+                          </button>
+                        )}
+                      </div>
+                    </button>
+                  </li>
                 )
               })}
             </ul>
@@ -388,11 +387,10 @@ function ManagementView({
               </p>
             </div>
             <span
-              className={`text-2xs rounded-full border px-2 py-0.5 ${
-                instance.hidden
+              className={`text-2xs rounded-full border px-2 py-0.5 ${instance.hidden
                   ? 'border-zinc-800 text-zinc-500'
                   : 'border-emerald-500/40 text-emerald-300'
-              }`}
+                }`}
             >
               {instance.hidden ? 'Hidden' : 'Visible'}
             </span>

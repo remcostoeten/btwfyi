@@ -8,10 +8,10 @@ This guide provides comprehensive documentation for setting up database persiste
 
 ```bash
 # Core Vigilo packages
-npm install @remcostoeten/vigilo-core @remcostoeten/vigilo-react
+npm install btwfyi-core btwfyi-react
 
 # Database persistence package
-npm install @vigilo/database
+npm install @btwfyi/database
 
 # Choose your ORM ( database drivers )
 npm install @prisma/client prisma
@@ -23,13 +23,13 @@ npm install drizzle-orm postgres
 
 ```bash
 # Generate Prisma schema
-npx vigilo-db --prisma --out prisma/schema.prisma
+npx btwfyi-db --prisma --out prisma/schema.prisma
 
 # Generate Drizzle schema  
-npx vigilo-db --drizzle --out lib/db/schema.ts
+npx btwfyi-db --drizzle --out lib/db/schema.ts
 
 # Generate raw SQL schema
-npx vigilo-db --sql --out db/vigilo.sql
+npx btwfyi-db --sql --out db/btwfyi.sql
 ```
 
 ### Step 3: Set Up Database
@@ -55,10 +55,10 @@ npx drizzle-kit migrate
 
 #### Next.js App Router - Prisma
 ```typescript
-// app/api/vigilo/state/[instanceKey]/route.ts
+// app/api/btwfyi/state/[instanceKey]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { createVigiloApiHandlers } from '@vigilo/database/server/handlers'
-import { createVigiloPrismaQueries } from '@vigilo/database/server/prisma'
+import { createVigiloApiHandlers } from '@btwfyi/database/server/handlers'
+import { createVigiloPrismaQueries } from '@btwfyi/database/server/prisma'
 import { PrismaClient } from '@prisma/client'
 
 // Initialize Prisma client (use singleton in production)
@@ -66,7 +66,7 @@ const prisma = new PrismaClient()
 const queries = createVigiloPrismaQueries(prisma)
 const handlers = createVigiloApiHandlers(queries)
 
-// GET /api/vigilo/state/[instanceKey] - Load complete state
+// GET /api/btwfyi/state/[instanceKey] - Load complete state
 export async function GET(
   request: NextRequest,
   { params }: { params: { instanceKey: string } }
@@ -74,7 +74,7 @@ export async function GET(
   return handlers.handleLoadState(request, { params })
 }
 
-// POST /api/vigilo/state/[instanceKey] - Save specific state updates
+// POST /api/btwfyi/state/[instanceKey] - Save specific state updates
 export async function POST(
   request: NextRequest,
   { params }: { params: { instanceKey: string } }
@@ -101,10 +101,10 @@ export async function POST(
 
 #### Next.js App Router - Drizzle
 ```typescript
-// app/api/vigilo/state/[instanceKey]/route.ts
+// app/api/btwfyi/state/[instanceKey]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { createVigiloApiHandlers } from '@vigilo/database/server/handlers'
-import { createVigiloDrizzleQueries } from '@vigilo/database/server/drizzle'
+import { createVigiloApiHandlers } from '@btwfyi/database/server/handlers'
+import { createVigiloDrizzleQueries } from '@btwfyi/database/server/drizzle'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import * as schema from '@/lib/db/schema' // Your generated Drizzle schema
@@ -115,7 +115,7 @@ const db = drizzle(client, { schema })
 const queries = createVigiloDrizzleQueries(db)
 const handlers = createVigiloApiHandlers(queries)
 
-// GET /api/vigilo/state/[instanceKey] - Load complete state
+// GET /api/btwfyi/state/[instanceKey] - Load complete state
 export async function GET(
   request: NextRequest,
   { params }: { params: { instanceKey: string } }
@@ -123,7 +123,7 @@ export async function GET(
   return handlers.handleLoadState(request, { params })
 }
 
-// POST /api/vigilo/state/[instanceKey] - Save specific state updates
+// POST /api/btwfyi/state/[instanceKey] - Save specific state updates
 export async function POST(
   request: NextRequest,
   { params }: { params: { instanceKey: string } }
@@ -154,9 +154,9 @@ export async function POST(
 ```tsx
 'use client'
 
-import { VigiloProvider } from '@vigilo/database'
-import { Vigilo } from '@remcostoeten/vigilo-react'
-import type { CategoryConfig } from '@remcostoeten/vigilo-core'
+import { VigiloProvider } from '@btwfyi/database'
+import { Vigilo } from 'btwfyi-react'
+import type { CategoryConfig } from 'btwfyi-core'
 
 // Example categories configuration
 const categories: CategoryConfig[] = [
@@ -182,7 +182,7 @@ const categories: CategoryConfig[] = [
 export default function App() {
   return (
     <VigiloProvider
-      baseUrl="/api/vigilo"
+      baseUrl="/api/btwfyi"
       defaultInstanceId="user-tasks"
       getAuthToken={() => localStorage.getItem('authToken') || undefined}
     >
@@ -200,8 +200,8 @@ export default function App() {
 ```tsx
 'use client'
 
-import { createApiVigiloStorage } from '@vigilo/database'
-import { Vigilo } from '@remcostoeten/vigilo-react'
+import { createApiVigiloStorage } from '@btwfyi/database'
+import { Vigilo } from 'btwfyi-react'
 import { useEffect, useState } from 'react'
 
 export default function App() {
@@ -209,7 +209,7 @@ export default function App() {
 
   useEffect(() => {
     const apiStorage = createApiVigiloStorage({
-      baseUrl: '/api/vigilo',
+      baseUrl: '/api/btwfyi',
       instanceId: 'user-tasks',
       token: localStorage.getItem('authToken') || undefined,
       headers: { 'X-Custom-Header': 'value' },
@@ -236,7 +236,7 @@ export default function App() {
 
 #### VigiloInstance
 ```sql
-CREATE TABLE vigilo_instance (
+CREATE TABLE btwfyi_instance (
     id VARCHAR(255) PRIMARY KEY,
     instance_key VARCHAR(255) UNIQUE NOT NULL,
     user_id VARCHAR(255),
@@ -247,21 +247,21 @@ CREATE TABLE vigilo_instance (
 
 #### VigiloPosition
 ```sql
-CREATE TABLE vigilo_position (
+CREATE TABLE btwfyi_position (
     id VARCHAR(255) PRIMARY KEY,
     instance_id VARCHAR(255) NOT NULL,
     x INT NOT NULL,
     y INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    FOREIGN KEY (instance_id) REFERENCES vigilo_instance(id) ON DELETE CASCADE,
+    FOREIGN KEY (instance_id) REFERENCES btwfyi_instance(id) ON DELETE CASCADE,
     UNIQUE (instance_id)
 );
 ```
 
 #### VigiloConnection
 ```sql
-CREATE TABLE vigilo_connection (
+CREATE TABLE btwfyi_connection (
     id VARCHAR(255) PRIMARY KEY,
     instance_id VARCHAR(255) NOT NULL,
     todo_index INT NOT NULL,
@@ -271,14 +271,14 @@ CREATE TABLE vigilo_connection (
     target_position_y INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    FOREIGN KEY (instance_id) REFERENCES vigilo_instance(id) ON DELETE CASCADE,
+    FOREIGN KEY (instance_id) REFERENCES btwfyi_instance(id) ON DELETE CASCADE,
     UNIQUE (instance_id, todo_index)
 );
 ```
 
 #### VigiloSettings
 ```sql
-CREATE TABLE vigilo_settings (
+CREATE TABLE btwfyi_settings (
     id VARCHAR(255) PRIMARY KEY,
     instance_id VARCHAR(255) NOT NULL,
     display_mode VARCHAR(50) DEFAULT 'full' NOT NULL,
@@ -290,28 +290,28 @@ CREATE TABLE vigilo_settings (
     component_opacity REAL DEFAULT 1.0 NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    FOREIGN KEY (instance_id) REFERENCES vigilo_instance(id) ON DELETE CASCADE,
+    FOREIGN KEY (instance_id) REFERENCES btwfyi_instance(id) ON DELETE CASCADE,
     UNIQUE (instance_id)
 );
 ```
 
 #### VigiloStatus
 ```sql
-CREATE TABLE vigilo_status (
+CREATE TABLE btwfyi_status (
     id VARCHAR(255) PRIMARY KEY,
     instance_id VARCHAR(255) NOT NULL,
     todo_index INT NOT NULL,
     status VARCHAR(20) DEFAULT 'todo' NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    FOREIGN KEY (instance_id) REFERENCES vigilo_instance(id) ON DELETE CASCADE,
+    FOREIGN KEY (instance_id) REFERENCES btwfyi_instance(id) ON DELETE CASCADE,
     UNIQUE (instance_id, todo_index)
 );
 ```
 
 ## 🔌 API Endpoints
 
-All endpoints follow the pattern: `/api/vigilo/[resource]/[instanceKey]`
+All endpoints follow the pattern: `/api/btwfyi/[resource]/[instanceKey]`
 
 ### State Management
 - `GET /state/[instanceKey]` - Load complete state for an instance
@@ -377,10 +377,10 @@ All endpoints follow the pattern: `/api/vigilo/[resource]/[instanceKey]`
 
 ### Custom Storage Adapter
 ```typescript
-import { createApiVigiloStorage } from '@vigilo/database'
+import { createApiVigiloStorage } from '@btwfyi/database'
 
 const storage = createApiVigiloStorage({
-  baseUrl: 'https://your-api.com/vigilo',
+  baseUrl: 'https://your-api.com/btwfyi',
   instanceId: 'project-tasks',
   token: user.authToken,
   headers: { 
@@ -399,7 +399,7 @@ function MultiInstanceApp() {
   return (
     <div>
       <VigiloProvider
-        baseUrl="/api/vigilo"
+        baseUrl="/api/btwfyi"
         defaultInstanceId="user-profile"
         getAuthToken={() => getToken()}
       >
@@ -407,7 +407,7 @@ function MultiInstanceApp() {
       </VigiloProvider>
       
       <VigiloProvider
-        baseUrl="/api/vigilo"
+        baseUrl="/api/btwfyi"
         defaultInstanceId="user-projects"
         getAuthToken={() => getToken()}
       >
@@ -420,7 +420,7 @@ function MultiInstanceApp() {
 
 ### Dynamic Instance Management
 ```tsx
-import { useVigiloStorage } from '@vigilo/database'
+import { useVigiloStorage } from '@btwfyi/database'
 
 function DynamicInstanceComponent({ projectId }: { projectId: string }) {
   const { getStorage, isAuthenticated } = useVigiloStorage()
@@ -460,7 +460,7 @@ export async function GET(request: NextRequest) {
 ### User Association
 ```typescript
 // Prisma queries with user filtering
-const userInstances = await prisma.vigiloInstance.findMany({
+const userInstances = await prisma.btwfyiInstance.findMany({
   where: {
     userId: user.id,
     instanceKey: instanceKey
@@ -485,7 +485,7 @@ State is loaded on-demand per instance, reducing initial load times and memory u
 ### Debounced Sync
 ```typescript
 const storage = createApiVigiloStorage({
-  baseUrl: '/api/vigilo',
+  baseUrl: '/api/btwfyi',
   instanceId: 'user-tasks',
   debounceMs: 300 // Debounce rapid updates
 })
@@ -497,7 +497,7 @@ Automatic fallback to localStorage on API errors ensures offline functionality.
 ### Optimistic Updates
 ```tsx
 <VigiloProvider
-  baseUrl="/api/vigilo"
+  baseUrl="/api/btwfyi"
   defaultInstanceId="user-tasks"
   optimisticUpdates={true} // Enable optimistic updates
   getAuthToken={() => getToken()}
@@ -511,7 +511,7 @@ Automatic fallback to localStorage on API errors ensures offline functionality.
 ### Enable Debug Logging
 ```typescript
 const storage = createApiVigiloStorage({
-  baseUrl: '/api/vigilo',
+  baseUrl: '/api/btwfyi',
   instanceId: 'user-tasks',
   debug: true // Enable console logging
 })
@@ -519,7 +519,7 @@ const storage = createApiVigiloStorage({
 
 ### Error Handling
 ```tsx
-import { useVigiloStorage } from '@vigilo/database'
+import { useVigiloStorage } from '@btwfyi/database'
 
 function ErrorHandlingComponent() {
   const { getStorage, error, isLoading } = useVigiloStorage()
@@ -542,10 +542,10 @@ function ErrorHandlingComponent() {
 
 ### Mock Storage for Testing
 ```typescript
-import { createApiVigiloStorage } from '@vigilo/database'
+import { createApiVigiloStorage } from '@btwfyi/database'
 
 const mockStorage = createApiVigiloStorage({
-  baseUrl: 'http://localhost:3000/api/vigilo',
+  baseUrl: 'http://localhost:3000/api/btwfyi',
   instanceId: 'test-instance',
   headers: { 'X-Test-Mode': 'true' }
 })
@@ -560,14 +560,14 @@ test('should save position', async () => {
 ### Integration Testing
 ```typescript
 // Test your API routes
-import { createVigiloApiHandlers } from '@vigilo/database'
-import { createVigiloPrismaQueries } from '@vigilo/database/server/prisma'
+import { createVigiloApiHandlers } from '@btwfyi/database'
+import { createVigiloPrismaQueries } from '@btwfyi/database/server/prisma'
 
 const queries = createVigiloPrismaQueries(prisma)
 const handlers = createVigiloApiHandlers(queries)
 
 test('should load state', async () => {
-  const request = new Request('http://localhost/api/vigilo/state/test')
+  const request = new Request('http://localhost/api/btwfyi/state/test')
   const response = await handlers.handleLoadState(request, { 
     params: { instanceKey: 'test' } 
   })
@@ -586,7 +586,7 @@ test('should load state', async () => {
 <Vigilo category="dev" categories={categories} />
 
 // After
-<VigiloProvider baseUrl="/api/vigilo" defaultInstanceId="dev">
+<VigiloProvider baseUrl="/api/btwfyi" defaultInstanceId="dev">
   <Vigilo category="dev" categories={categories} />
 </VigiloProvider>
 ```
@@ -598,10 +598,10 @@ async function migrateFromLocalStorage() {
   const users = await prisma.user.findMany()
   
   for (const user of users) {
-    const localData = localStorage.getItem(`vigilo-${user.id}`)
+    const localData = localStorage.getItem(`btwfyi-${user.id}`)
     if (localData) {
       const data = JSON.parse(localData)
-      await prisma.vigiloInstance.create({
+      await prisma.btwfyiInstance.create({
         data: {
           instanceKey: `user-${user.id}`,
           userId: user.id,
@@ -626,11 +626,11 @@ import type {
   VigiloStateResponse,
   VigiloApiRequest,
   VigiloProviderConfig
-} from '@vigilo/database'
+} from '@btwfyi/database'
 
 // Type-safe configuration
 const config: ApiStorageConfig = {
-  baseUrl: '/api/vigilo',
+  baseUrl: '/api/btwfyi',
   instanceId: 'user-tasks',
   token: 'auth-token',
   timeout: 5000
