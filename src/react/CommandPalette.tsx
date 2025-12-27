@@ -313,7 +313,12 @@ export function BtwfyiCommandPalette({
                   setIsParsing(true)
                   smartParseWithGrok(text, aiConfig.grokApiKey)
                     .then(tasks => {
-                      tasks.forEach(t => onTaskCreate(t))
+                      tasks.forEach(t => onTaskCreate({
+                        text: t.text,
+                        dueDate: t.dueDate instanceof Date ? t.dueDate : t.dueDate ? new Date(t.dueDate) : undefined,
+                        tags: t.tags || [],
+                        priority: t.priority
+                      }))
                       if (tasks.length > 0) closePalette()
                     })
                     .catch(console.error)

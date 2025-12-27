@@ -22,7 +22,7 @@ export function parseSmartSyntax(input: string): SmartSyntaxResult {
     const priorityRegex = /\s*!(high|urgent|medium|med|low|1|2|3)\b/i
     const priorityMatch = text.match(priorityRegex)
 
-    if (priorityMatch) {
+    if (priorityMatch && priorityMatch[1]) {
         const p = priorityMatch[1].toLowerCase()
         if (p === 'high' || p === 'urgent' || p === '1') priority = 'high'
         else if (p === 'medium' || p === 'med' || p === '2') priority = 'medium'
@@ -36,7 +36,7 @@ export function parseSmartSyntax(input: string): SmartSyntaxResult {
     const tagRegex = /#([\w-]+)/g
     let tagMatch
     while ((tagMatch = tagRegex.exec(text)) !== null) {
-        tags.push(tagMatch[1])
+        if (tagMatch[1]) tags.push(tagMatch[1])
     }
     // Remove tags from text
     text = text.replace(tagRegex, '')
