@@ -7,6 +7,8 @@ export type PaletteTaskSnapshot = {
   index: number
   text: string
   status: TodoStatus
+  priority?: 'low' | 'medium' | 'high'
+  tags: string[]
   hasConnection: boolean
   focusTask: () => void
   clearConnection?: () => void

@@ -259,22 +259,44 @@ export function BtwfyiCommandPalette({
               ref={inputRef}
               onPaste={(e) => {
                 const text = e.clipboardData.getData('text')
-                if (!onTaskCreate || !text.includes('\n')) return
+                if (!onTaskCreate) return
 
-                // Check for markdown list items (unordered or ordered)
-                const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
-                const isList = lines.every(l => /^(\s*[-*]|\s*\d+\.)\s/.test(l))
+                // 1. Try JSON Import
+                try {
+                  const json = JSON.parse(text)
+                  if (Array.isArray(json)) {
+                    e.preventDefault()
+                    // Allow simple strings or objects with 'text'
+                    json.forEach(item => {
+                      const taskText = typeof item === 'string' ? item : item?.text
+                      if (taskText && typeof taskText === 'string') {
+                        onTaskCreate(parseSmartSyntax(taskText))
+                      }
+                    })
+                    closePalette()
+                    return
+                  }
+                } catch {
+                  // Not JSON, continue
+                }
 
-                if (isList) {
-                  e.preventDefault()
-                  lines.forEach(line => {
-                    // Remove list markers
-                    const cleanText = line.replace(/^(\s*[-*]|\s*\d+\.)\s/, '')
-                    const parsed = parseSmartSyntax(cleanText)
-                    onTaskCreate(parsed)
-                  })
-                  closePalette()
-                  // Optional: Show toast or feedback "Imported X tasks"
+                // 2. Try Markdown/List Import
+                if (text.includes('\n')) {
+                  // Check for markdown list items (unordered or ordered)
+                  const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
+                  // Improved list detection: - * 1. or just bullet-like characters
+                  const isList = lines.length > 1 || lines.every(l => /^(\s*[-*•]|\s*\d+\.)\s/.test(l))
+
+                  if (isList) {
+                    e.preventDefault()
+                    lines.forEach(line => {
+                      // Remove list markers
+                      const cleanText = line.replace(/^(\s*[-*•]|\s*\d+\.)\s/, '')
+                      const parsed = parseSmartSyntax(cleanText)
+                      onTaskCreate(parsed)
+                    })
+                    closePalette()
+                  }
                 }
               }}
               value={query}
@@ -467,6 +489,44 @@ function ManagementView({
             >
               Hide
             </button>
+
+            {/* Export Actions */}
+            <div className="h-4 w-px bg-zinc-800 mx-1 self-center" />
+
+            <button
+              className="rounded-md border border-purple-500/40 px-3 py-1 text-purple-200 hover:bg-purple-500/10"
+              onClick={() => {
+                const md = instance.tasks.map(t => `- [${t.status === 'done' ? 'x' : ' '}] ${t.text} ${t.priority ? '!' + t.priority : ''} ${t.tags.map(tag => '#' + tag).join(' ')}`).join('\n')
+                navigator.clipboard.writeText(md)
+                // Ideally show a toast here
+              }}
+              title="Copy as Markdown list"
+            >
+              Copy MD
+            </button>
+            <button
+              className="rounded-md border border-green-500/40 px-3 py-1 text-green-200 hover:bg-green-500/10"
+              onClick={() => {
+                const slack = instance.tasks.map(t => `• ${t.status === 'done' ? '~' : ''}${t.text}${t.status === 'done' ? '~' : ''} ${t.priority ? '(*' + t.priority + '*)' : ''}`).join('\n')
+                navigator.clipboard.writeText(slack)
+              }}
+              title="Copy for Slack"
+            >
+              Copy Slack
+            </button>
+            <button
+              className="rounded-md border border-zinc-600 px-3 py-1 text-zinc-400 hover:bg-zinc-700/20"
+              onClick={() => {
+                const json = JSON.stringify(instance.tasks, null, 2)
+                navigator.clipboard.writeText(json)
+              }}
+              title="Copy raw JSON"
+            >
+              JSON
+            </button>
+
+            <div className="h-4 w-px bg-zinc-800 mx-1 self-center" />
+
             <button
               className="rounded-md border border-rose-500/40 px-3 py-1 text-rose-300 hover:bg-rose-500/10"
               onClick={() => instance.actions.resetConnections()}

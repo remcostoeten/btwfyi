@@ -901,6 +901,8 @@ function BtwfyiCore<TCategories extends readonly CategoryConfig[] = CategoryConf
       index: idx,
       text: item.text,
       status: statuses.get(idx) ?? 'todo',
+      priority: item.priority,
+      tags: item.tags || [],
       hasConnection: connectionsByIndex.has(idx),
       focusTask: () => {
         revealOverlay()
